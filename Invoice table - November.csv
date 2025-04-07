@@ -1,0 +1,57 @@
+Code for separation,Supplier,Invoice number,local tax number,EU tax number/VAT ID,Bank acc. Num/IBAN,BIC-SWIFT,Type of operation,Issue date,Payment due date,Amount/net,VAT,Amount/gross,Currency,Exchange rate,Amount in PLN,Status,Date of payment,Comment
+05 - Teletech,Project C AB,PCA/I24-000164,,SE559342235401,SE21 9500 0099 6018 1944 9974,NDEASESS,Transfer,11.10.2024,18.10.2024,,,600.00,EUR,4.35,"2,610.00",Alredy paid,04/11/2024,Booking fee for the artist Nur Jaber
+05 - Teletech,Sometimescreative GmbH,RE2024015,,DE2753750632,DE05100101238755024708,QNTODEB2XXX,Transger,01.11.2024,15.11.2024,,,"5,000.00",EUR,4.35,"21,750.00",Already paid,04/11/2024,Digital marketing
+02 - Burn Warsaw,DAREKRADIO Dariusz Przepióra,953/10/2024,,,53 2490 0005 0000 4500 5875 8629,,Transger,22.10.2024,31.10.2024,"1,140.00",262.20,"1,402.20",PLN,,"1,402.20",Already paid,07/11/2024,Radio
+02 - Burn Warsaw,Useme sp. z o.o.,Pro forma UMZ6FJCJ,,,64 1050 1575 1000 0090 3136 0424,,Transger,07.11.2024,07.11.2024,"8,314.00","1,912.22","10,226.22",PLN,,"10,226.22",Already paid,07/11/2024,Marketing / Copywriting i teksty Burn on Tour x Mixmag PR
+02 - Burn Warsaw,MICHAŁ CYMERMAN,Nr 4/10/2024,,,04 2490 0005 0000 4500 3686 7484,,Transger,21.10.2024,04.11.2024,"6,250.00","1,437.50","7,687.50",PLN,,"7,687.50",Already paid,07/11/2024,Technikal supplier
+04 - Boiler room Warsaw,Luke Slater Productions Ltd.,LSP-2024850,,GB691027636,BE11 9671 6256 0848,TRWIBEB1XXX,Transger,08/11/2024,08/11/2024,,,"6,500.00",EUR,4.35,"28,275.00",Already paid,08/11/2024,Artists payment
+04 - Boiler room Warsaw,Sometimescreative.GmbH,RE2024017,,DE2753750632,DE05100101238755024708,QNTODEB2XXX,Transger,08.11.2024,08.11.2024,,,"6,112.00",EUR,4.35,"26,587.20",Already paid,08.11.2024,Batu
+05 - Teletech,MOIA.MS,#54,,,GB37 NWBK 6072 1363 0138 86,NWBKGB2L,Transger,06.11.2024,08.11.2024,,,"1,200.00",EUR,4.35,"5,220.00",Already paid,08.11.2024,MOIA DJ set + travel Warsaw 28.02.25
+02 - Burn Warsaw,KUL DESIGN Aleksandra Kulawiec,ZK 1,,,65 1140 2004 0000 3302 8235 1399,,Transfer,04.11.2024,08.11.2024,"10,710.00","2,463.30","13,173.30",PLN,,"13,173.30",Already paid,08.11.2024,Usługi scenagraficzne
+04 - Boiler room Warsaw,WizzAir,160068561Z,,,,,Card Payment,10.11.2024,10.11.2024,,,"4,650.00",HUF,0.011,51.15,Already paid,10.11.2024,WizzAir Prad flight
+04 - Boiler room Warsaw,WizzAir,160033413Z,,,,,Card Payment,10.11.2024,10.11.2024,,,"96,930.00",HUF,0.011,"1,066.23",Already paid,10.11.2024,WizzAir Prad flight
+02 - Burn Warsaw,X-Tra Média,2024/01084,11917869-2-42,HU 11917869,HU76 1160 0006 0000 0000 8431 0282,GIBAHUHB,Transfer,21.10.2024,25.10.2024,,,"2,176.00",EUR,4.35,"9,465.60",Already paid,10.11.2024,Printing Warsaw decoration 50%
+04 - Boiler room Warsaw,Elite Music Management,PFA-1,,,GB36 NWBK 6072 1322 5121 36,NWBKGB2L,Transfer,25.09.2024,11.11.2024,,,"2,310.00",EUR,4.31,"9,956.10",Already paid,18.11.2024,Phase Fatale AKA Hayden Moskowitz
+04 - Boiler room Warsaw,Badass Production by Krzysztof Wójcik,FV/17/2024,,,19 1050 1025 1000 0090 8394 9546,,Transfer,10.11.2024,10.11.2024,"16,530.00",3801.9,"20,331.90",PLN,,"20,331.90",Already paid,15.11.2024,Prosty sellary
+02 - Burn Warsaw,: Nabywca: DHL Parcel Polska Sp. z o.o,4/H/WA/WWW/ 44148,,,,,Card Payment,14.11.2024,14.11.2024,139.84,32.16,172.00,PLN,,172.00,Already paid,14.11.2024,DHL Burn merch
+02 - Burn Warsaw,: Nabywca: DHL Parcel Polska Sp. z o.o,4/H/WA/WWW/ 44147,,,,,Card Payment,14.11.2024,14.11.2024,109.76,25.24,135.00,PLN,,135.00,Already paid,14.11.2024,DHL Burn merch
+04 - Boiler room Warsaw,HSGROUP HUBERT SCHIFFER,Faktura Proforma numer P25/11/2024,,,91 1160 2202 0000 0002 7502 7631,,Transfer,15.11.2024,18.11.2024,"4,737.01",1089.51,"5,826.52",PLN,,"5,826.52",Already paid,18.11.2024,Clockroom/send proof of payment/ 1000PLN will send back after event
+04 - Boiler room Warsaw,AMADEO GROUP Tomasz Radwan,FP/2024/11/1619,,,38 1050 1025 1000 0093 0091 3275,,Transfer,15.11.2024,18.11.2024,"5,060.00",1163.8,"6,223.80",PLN,,"6,223.80",Already paid,18.11.2024,Clockroom / 1000PLN will send back after event
+05 - Teletech,DUEL PRODUCTIONS Michel Morales Villavicencio,02/11/2024,,,PL 72 1050 1025 1000 0097 4488 2342,INGBPLPW,Transfer,07.11.2024,19.11.2024,"6,055.00",1392.65,"7,447.65",EUR,4.3662,"32,517.93",Already paid,18.11.2024,Booking management fee
+02 - Burn Warsaw,Useme sp. z o.o.,UM2GMTZT,,,PL42105015751000009031360432,INGBPLPW,Transfer,15.11.2024,17.11.2024,"2,035.58",468.18,"2,503.76",PLN,,"2,503.76",Already paid,18.11.2024,400 Vinyls
+02 - Burn Warsaw,"„Play It"" Piotr Ryncarz",20/10/2024,,,70 1140 2004 0000 3602 8041 6303,,Transfer,30.10.2024,06.11.2024,200.00,46,246.00,PLN,,246.00,Already paid,18.11.2024,Technikal servies
+04 - Boiler room Warsaw,KLM ROYAL DUTCH AIRLINES,KLHU0023955331,,,,,Card Payment,11.11.2024,11.11.2024,,,"215,376.00",HUF,0.011,"2,369.14",Already paid,11.11.2024,KLM Flieght for Tocken team
+04 - Boiler room Warsaw,MIA CONSULT GROUP SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ,FS/29489/2024,,,26 1090 0088 0000 0001 4674 7649,,Transfer,01.11.2024,01.11.2024,604.00,138.92,742.92,PLN,,742.92,Already paid,19.11.2024,Mia Group accounting
+04 - Boiler room Warsaw,MIA CONSULT GROUP SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ,FS/28206/2024,,,26 1090 0088 0000 0001 4674 7649,,Transfer,01.11.2024,01.11.2024,150.00,34.5,184.50,PLN,,184.50,Already paid,19.11.2024,Mia Group accounting
+04 - Boiler room Warsaw,Triangle Booking and Artistmanagement GmbH,MARTR24-124,,,DE25 1004 0000 0577 3320 17,COBADEFFXXX,Transfer,01.11.2024,01.11.2024,,,"5,000.00",EUR,4.31,"21,550.00",Already paid,18.11.2024,MARRON booking
+04 - Boiler room Warsaw,Estella Boersma,EST075,,DE337842820,GB37 NWBK 6072 1363 0138 86,NWBKGB2L,Transfer,31.10.2024,18.11.2024,,,"4,500.00",EUR,4.31,"19,395.00",Already paid,18.11.2024,Estella Boersma
+04 - Boiler room Warsaw,Wizz Air Hungary,160629233Z,26648525-2-44,HU26648525,,,Card Payment,18.11.2024,18.11.2024,,,"46,600.00",HUF,0.011,512.60,Already paid,18.11.2024,WizzAir Prad flight
+04 - Boiler room Warsaw,LOW FREQUENCY LAB GP,A5,,EL 802638080,GB37 NWBK 6072 1363 0138 86,NWBKGB2L,Transfer,13.11.2024,18.11.2024,,,"1,620.00",EUR,4.33,"7,014.60",Already paid,19.11.2024,Artist Fee for ANNĒ
+04 - Boiler room Warsaw,Chris Liebing Productions,CL2024101,,CHE-153.325.694,CH12 0021 3213 2133 9760 X,UBSWCHZH80A,Transfer,18.11.2024,19.11.2024,,,"4,500.00",EUR,4.33,"19,485.00",Already paid,19.11.2024,Artist fee Chris Liebing
+04 - Boiler room Warsaw,Meanwhile part of MNWHL B.V,MEAN20244199,,NL857105760B01,NL39FRNX0984616055,FRNXNL2A,Transfer,19.11.2024,19.11.2024,,,"4,250.00",EUR,4.33,"18,402.50",Already paid,19.11.2024,Performance Fee: Daria Kolosova
+04 - Boiler room Warsaw,BAJT Stanisław Grzelak,101/WA2/10/2024,,,32 1020 4476 0000 8302 0420 5787,,Transfer,19.11.2024,19.11.2024,"1,485.00",341.55,"1,826.55",PLN,,"1,826.55",Already paid,25.11.2024,Posnet pospay
+04 - Boiler room Warsaw,BAJT Stanisław Grzelak,102/WA2/10/2024,,,32 1020 4476 0000 8302 0420 5787,,Transfer,19.11.2024,19.11.2024,"1,500.00",345,"1,845.00",PLN,,"1,845.00",Already paid,25.11.2024,Posnet pospay support
+04 - Boiler room Warsaw,UR CUP SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ,Pro Forma nr 20241102,,,24 1140 2004 0000 3002 7853 6498,,Transfer,19.11.2024,19.11.2024,"7,415.00",1705.45,"9,120.45",PLN,,"9,120.45",Already paid,25.11.2024,Cups
+04 - Boiler room Warsaw,WizzAir,160699310Z,,,,,Card Payment,19.11.2024,19.11.2024,,,198.78,EUR,4.33,860.72,Already paid,19.11.2024,WizzAir Prad flight
+04 - Boiler room Warsaw,WizzAir,160700716Z,,,,,Card Payment,19.11.2024,19.11.2024,,,"53,450.00",HUF,0.011,587.95,Already paid,19.11.2024,WizzAir Prad flight
+03 - Mix Burn-Exist-Rest Events,Prad Sweden,Bill,,,,,Card Payment,02.11.2024,02.11.2024,,,"5,350.00",SEK,0.37,"1,979.50",Already paid,02.11.2024,COS shoping
+03 - Mix Burn-Exist-Rest Events,Prad Sweden,Bill,,,,,Card Payment,02.11.2024,02.11.2024,,,"2,107.00",SEK,0.37,779.59,Already paid,02.11.2024,Dr Martins
+03 - Mix Burn-Exist-Rest Events,Prad Sweden,Bill,,,,,Card Payment,02.11.2024,02.11.2024,,,85.00,SEK,0.37,31.45,Already paid,02.11.2024,Cafe
+03 - Mix Burn-Exist-Rest Events,Prad Sweden,Bill,,,,,Card Payment,02.11.2024,02.11.2024,,,750.00,SEK,0.37,277.50,Already paid,02.11.2024,Cafe
+03 - Mix Burn-Exist-Rest Events,Prad Sweden,Bill,,,,,Card Payment,02.11.2024,02.11.2024,,,"1,727.00",SEK,0.37,638.99,Already paid,02.11.2024,Smth
+03 - Mix Burn-Exist-Rest Events,Sandra Venice,Bill,,,,,Card Payment,08.11.2024,08.11.2024,,,15.00,EUR,4.35,65.25,Already paid,08.11.2024,Sandra Venice
+03 - Mix Burn-Exist-Rest Events,Sandra Venice,Bill,,,,,Card Payment,08.11.2024,08.11.2024,,,32.62,EUR,4.35,141.90,Already paid,08.11.2024,Sandra Venice
+03 - Mix Burn-Exist-Rest Events,Sandra Venice,Bill,,,,,Card Payment,08.11.2024,08.11.2024,,,22.00,EUR,4.35,95.70,Already paid,08.11.2024,Sandra Venice
+03 - Mix Burn-Exist-Rest Events,Sandra Venice,Bill,,,,,Card Payment,08.11.2024,08.11.2024,,,40.50,EUR,4.35,176.18,Already paid,08.11.2024,Sandra Venice
+03 - Mix Burn-Exist-Rest Events,Sandra Venice,Bill,,,,,Card Payment,08.11.2024,08.11.2024,,,21.50,EUR,4.35,93.53,Already paid,08.11.2024,Sandra Venice
+03 - Mix Burn-Exist-Rest Events,Sandra Venice,Bill,,,,,Card Payment,08.11.2024,08.11.2024,,,35.00,EUR,4.35,152.25,Already paid,08.11.2024,Sandra Venice
+03 - Mix Burn-Exist-Rest Events,Sandra Venice,Bill,,,,,Card Payment,08.11.2024,08.11.2024,,,27.00,EUR,4.35,117.45,Already paid,08.11.2024,Sandra Venice
+03 - Mix Burn-Exist-Rest Events,Sandra Venice,Bill,,,,,Card Payment,08.11.2024,08.11.2024,,,22.40,EUR,4.35,97.44,Already paid,08.11.2024,Sandra Venice
+04 - Boiler room Warsaw,WizzAir,160713329Z,,,,,Card Payment,20.11.2024,20.11.2024,,,"19,690.00",HUF,0.011,216.59,Already paid,20.11.2024,WizzAir Prad flight
+04 - Boiler room Warsaw,WizzAir,160768919Z,,,,,Card Payment,21.11.2024,21.11.2024,,,"24,500.00",HUF,0.011,269.50,Already paid,21.11.2024,WizzAir Prad flight
+04 - Boiler room Warsaw,BYŚ Wojciech Byśkiniewicz,241101121,,,15 1020 1026 2158 0000 0010 6813,,Transfer,22.11.2024,22.11.2024,"2,700.00",216,"2,916.00",PLN,,"2,916.00",Already paid,25.11.2024,Kontainer for trash
+04 - Boiler room Warsaw,Refactore OÜ,INV2400005,,EE102628681,LT683250086456494799,REVOLT21,Transfer,26.11.2024,26.11.2024,,,"33,000.00",EUR,4.3,"141,900.00",Already paid,26.11.2024,Production of marketing budget for december
+05 - Teletech,Sometimescreative GmbH,RE2024018,,DE2753750632,DE05100101238755024708,QNTODEB2XXX,Transger,20.11.2024,04.12.2024,,,"1,720.00",EUR,4.3,"7,396.00",Already paid,29.11.2024,Teletech Event Digital Marketing Warsaw
+04 - Boiler room Warsaw,Urząd miasta stołecznego Warszawy,Bill,,,,,Card Payment,18.11.2024,18.11.2024,,,51,PLN,,51,Already paid,18.11.2024,Alkohole lisense
+04 - Boiler room Warsaw,"WOJEWÓDZKA STACJA POGOTOWIA RATUNKOWEGO I TRANSPORTU SANITARNEGO ""MEDITRANS"" SAMODZIELNY PUBLICZNY ZAKŁAD OPIEKI ZDROWOTNEJ W WARSZAWIE",FS/W/11/24/0153,,,98 1020 1013 0000 0902 0106 8089,,Transfer,02.12.2024,02.12.2024,150.00,34.5,184.50,PLN,,184.50,Already paid,02.12.2024,"Za wydanie opinii o niezbędnej wielkości sił i środków potrzebnych do zabezpieczenia imprezy masowej ""BOILER ROOM"" IM.72.255.2024 USŁ 1 150,00 150,00 23% 34,50 184,50 OPINIA-MED"
+,,,,,,,,,,,,,,,466 904,,,
