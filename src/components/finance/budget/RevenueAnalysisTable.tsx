@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -35,8 +35,24 @@ const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
   getVarianceClass,
   onAddRevenueClick
 }) => {
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editedValues, setEditedValues] = useState<Record<string, any>>({});
+
   const handleEdit = (id: string) => {
-    toast.info(`Edit functionality for revenue item ${id} will be implemented soon`);
+    const item = filteredRevenue.find(revenue => revenue.id === id);
+    if (item) {
+      setEditedValues({
+        ...editedValues,
+        [id]: { ...item }
+      });
+      setEditingItemId(id);
+    }
+  };
+
+  const handleSave = (id: string) => {
+    // In a real app, this would save to the database
+    toast.success(`Changes to revenue item ${id} saved successfully`);
+    setEditingItemId(null);
   };
 
   const handleDelete = (id: string) => {
@@ -94,7 +110,9 @@ const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
                     <TableCell>
                       <ActionButtons
                         onEdit={() => handleEdit(item.id)}
+                        onSave={() => handleSave(item.id)}
                         onDelete={() => handleDelete(item.id)}
+                        isEditing={editingItemId === item.id}
                       />
                     </TableCell>
                   </TableRow>

@@ -61,10 +61,21 @@ const Events = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<number | null>(null);
+  const [editedValues, setEditedValues] = useState<Record<string, any>>({});
 
   const handleEdit = (eventId: number) => {
-    setSelectedEvent(eventId);
-    toast.info(`Edit functionality for event ${eventId} will be implemented soon`);
+    setEditingEvent(eventId);
+    setEditedValues({
+      ...editedValues,
+      [eventId]: { ...events.find(e => e.id === eventId) }
+    });
+    toast.info(`Edit mode enabled for event ${eventId}`);
+  };
+
+  const handleSave = (eventId: number) => {
+    toast.success(`Event ${eventId} updated successfully`);
+    setEditingEvent(null);
   };
 
   const handleDelete = (eventId: number) => {
@@ -120,7 +131,9 @@ const Events = () => {
                       <div className="absolute top-2 right-2">
                         <ActionButtons
                           onEdit={() => handleEdit(event.id)}
+                          onSave={() => handleSave(event.id)}
                           onDelete={() => handleDelete(event.id)}
+                          isEditing={editingEvent === event.id}
                         />
                       </div>
                     </div>

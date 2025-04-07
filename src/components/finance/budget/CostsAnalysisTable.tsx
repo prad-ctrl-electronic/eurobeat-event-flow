@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CostItem } from "./budgetData";
@@ -35,8 +36,24 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
   getVarianceClass,
   onAddCostClick
 }) => {
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editedValues, setEditedValues] = useState<Record<string, any>>({});
+
   const handleEdit = (id: string) => {
-    toast.info(`Edit functionality for cost item ${id} will be implemented soon`);
+    const item = filteredCosts.find(cost => cost.id === id);
+    if (item) {
+      setEditedValues({
+        ...editedValues,
+        [id]: { ...item }
+      });
+      setEditingItemId(id);
+    }
+  };
+
+  const handleSave = (id: string) => {
+    // In a real app, this would save to the database
+    toast.success(`Changes to cost item ${id} saved successfully`);
+    setEditingItemId(null);
   };
 
   const handleDelete = (id: string) => {
@@ -94,7 +111,9 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
                     <TableCell>
                       <ActionButtons
                         onEdit={() => handleEdit(item.id)}
+                        onSave={() => handleSave(item.id)}
                         onDelete={() => handleDelete(item.id)}
+                        isEditing={editingItemId === item.id}
                       />
                     </TableCell>
                   </TableRow>

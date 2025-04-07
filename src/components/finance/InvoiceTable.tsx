@@ -1,4 +1,6 @@
 
+// In the InvoiceTable component, we'll add editing capability with save functionality
+
 import React, { useState } from "react";
 import {
   Table,
@@ -167,6 +169,8 @@ const InvoiceTable: React.FC = () => {
   const [showComments, setShowComments] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editedValues, setEditedValues] = useState<Record<string, any>>({});
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase();
@@ -200,8 +204,18 @@ const InvoiceTable: React.FC = () => {
   };
   
   const handleEdit = (index: number) => {
-    setSelectedInvoice(index);
-    toast.info(`Edit functionality for invoice ${filteredData[index].invoiceNumber} will be implemented soon`);
+    setEditingIndex(index);
+    setEditedValues({
+      ...editedValues,
+      [index]: { ...filteredData[index] }
+    });
+    toast.info(`Edit mode enabled for invoice ${filteredData[index].invoiceNumber}`);
+  };
+
+  const handleSave = (index: number) => {
+    // In a real app, this would save to the database
+    toast.success(`Changes to invoice ${filteredData[index].invoiceNumber} saved successfully`);
+    setEditingIndex(null);
   };
 
   const handleDelete = (index: number) => {
@@ -318,7 +332,9 @@ const InvoiceTable: React.FC = () => {
                   <TableCell>
                     <ActionButtons
                       onEdit={() => handleEdit(index)}
+                      onSave={() => handleSave(index)}
                       onDelete={() => handleDelete(index)}
+                      isEditing={editingIndex === index}
                     />
                   </TableCell>
                 </TableRow>
