@@ -1,74 +1,195 @@
 
-import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import React, { useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Chart } from "@/components/ui/chart";
-import { useTasks } from "@/hooks/useTasks";
-import { FileDown, Printer } from "lucide-react";
+import { 
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent
+} from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { FileDown, FileText } from "lucide-react";
 
-const TaskReport = () => {
-  const { tasks, loading } = useTasks();
+// Sample task data
+const sampleTasks = [
+  {
+    id: "task-001",
+    title: "Finalize venue contract for Spring Festival",
+    description: "Review contract terms and sign final agreement with venue management",
+    status: "completed",
+    priority: "high",
+    dueDate: "2025-03-15",
+    assignee: "Marcus Johnson",
+    project: "Spring Festival 2025",
+    category: "Venue"
+  },
+  {
+    id: "task-002",
+    title: "Book headline DJ for Techno Fusion",
+    description: "Contact agent and negotiate performance fee",
+    status: "in-progress",
+    priority: "high",
+    dueDate: "2025-03-30",
+    assignee: "Sophia Williams",
+    project: "Techno Fusion",
+    category: "Artist Booking"
+  },
+  {
+    id: "task-003",
+    title: "Order promotional materials for Burn Warsaw",
+    description: "Design and order flyers, posters and online banners",
+    status: "in-progress",
+    priority: "medium",
+    dueDate: "2025-04-10",
+    assignee: "Emma Thompson",
+    project: "Burn Warsaw",
+    category: "Marketing"
+  },
+  {
+    id: "task-004",
+    title: "Submit permit applications for upcoming events",
+    description: "Prepare and submit required documentation for city permits",
+    status: "pending",
+    priority: "high",
+    dueDate: "2025-03-25",
+    assignee: "David Wilson",
+    project: "Multiple Events",
+    category: "Administrative"
+  },
+  {
+    id: "task-005",
+    title: "Finalize security staff schedule for Boiler Room",
+    description: "Coordinate with security company and confirm personnel",
+    status: "completed",
+    priority: "medium",
+    dueDate: "2025-03-18",
+    assignee: "Marcus Johnson",
+    project: "Boiler Room",
+    category: "Security"
+  },
+  {
+    id: "task-006",
+    title: "Set up ticket sales platform for Spring Festival",
+    description: "Configure online ticketing system and test purchase flow",
+    status: "pending",
+    priority: "high",
+    dueDate: "2025-04-01",
+    assignee: "Emma Thompson",
+    project: "Spring Festival 2025",
+    category: "Tickets"
+  },
+  {
+    id: "task-007",
+    title: "Arrange transportation for Techno Fusion artists",
+    description: "Book flights and local transport for all performers",
+    status: "in-progress",
+    priority: "medium",
+    dueDate: "2025-04-05",
+    assignee: "Sophia Williams",
+    project: "Techno Fusion",
+    category: "Logistics"
+  },
+  {
+    id: "task-008",
+    title: "Review and approve stage design for Burn Warsaw",
+    description: "Evaluate proposed designs and select final layout",
+    status: "completed",
+    priority: "low",
+    dueDate: "2025-03-20",
+    assignee: "David Wilson",
+    project: "Burn Warsaw",
+    category: "Production"
+  }
+];
+
+// Process data for chart
+const getTasksByStatus = () => {
+  const statusCounts = { completed: 0, "in-progress": 0, pending: 0 };
   
-  // Calculate statistics
-  const totalTasks = tasks.length;
-  const tasksByStatus = {
-    pending: tasks.filter(t => t.status === 'pending').length,
-    draft: tasks.filter(t => t.status === 'draft').length,
-    completed: tasks.filter(t => t.status === 'completed').length,
-  };
-  
-  const tasksByPriority = {
-    high: tasks.filter(t => t.priority === 'high').length,
-    medium: tasks.filter(t => t.priority === 'medium').length,
-    low: tasks.filter(t => t.priority === 'low').length,
-  };
-  
-  // Group tasks by project
-  const tasksByProject: {[key: string]: number} = {};
-  tasks.forEach(task => {
-    if (task.project) {
-      tasksByProject[task.project] = (tasksByProject[task.project] || 0) + 1;
+  sampleTasks.forEach(task => {
+    if (statusCounts[task.status as keyof typeof statusCounts] !== undefined) {
+      statusCounts[task.status as keyof typeof statusCounts]++;
     }
   });
   
-  const statusChartData = [
-    { name: 'Pending', value: tasksByStatus.pending, fill: '#f59e0b' },
-    { name: 'Draft', value: tasksByStatus.draft, fill: '#64748b' },
-    { name: 'Completed', value: tasksByStatus.completed, fill: '#22c55e' },
+  return [
+    { name: "Completed", value: statusCounts.completed },
+    { name: "In Progress", value: statusCounts["in-progress"] },
+    { name: "Pending", value: statusCounts.pending }
   ];
+};
+
+const getTasksByProject = () => {
+  const projectCounts: Record<string, number> = {};
   
-  const priorityChartData = [
-    { name: 'High', value: tasksByPriority.high, fill: '#ef4444' },
-    { name: 'Medium', value: tasksByPriority.medium, fill: '#f59e0b' },
-    { name: 'Low', value: tasksByPriority.low, fill: '#3b82f6' },
+  sampleTasks.forEach(task => {
+    if (!projectCounts[task.project]) {
+      projectCounts[task.project] = 0;
+    }
+    projectCounts[task.project]++;
+  });
+  
+  return Object.entries(projectCounts).map(([name, value]) => ({ name, value }));
+};
+
+const getTasksByPriority = () => {
+  const priorityCounts: Record<string, number> = { high: 0, medium: 0, low: 0 };
+  
+  sampleTasks.forEach(task => {
+    if (priorityCounts[task.priority]) {
+      priorityCounts[task.priority]++;
+    }
+  });
+  
+  return [
+    { name: "High", value: priorityCounts.high },
+    { name: "Medium", value: priorityCounts.medium },
+    { name: "Low", value: priorityCounts.low }
   ];
+};
+
+const TaskReport = () => {
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
   
-  const projectChartData = Object.entries(tasksByProject).map(([name, value]) => ({
-    name,
-    value,
-    fill: `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`
-  }));
+  const filteredTasks = selectedProject
+    ? sampleTasks.filter(task => task.project === selectedProject)
+    : sampleTasks;
+  
+  const tasksByStatus = getTasksByStatus();
+  const tasksByProject = getTasksByProject();
+  const tasksByPriority = getTasksByPriority();
+  
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case "completed": return "default";
+      case "in-progress": return "secondary";
+      case "pending": return "outline";
+      default: return "default";
+    }
+  };
+  
+  const getPriorityVariant = (priority: string) => {
+    switch (priority) {
+      case "high": return "destructive";
+      case "medium": return "secondary";
+      case "low": return "outline";
+      default: return "default";
+    }
+  };
   
   const downloadTaskReport = () => {
-    // Create report data
     const reportData = {
-      reportDate: new Date().toISOString(),
-      generatedBy: "System",
-      totalTasks,
-      tasksByStatus,
-      tasksByPriority,
-      tasksByProject,
-      tasks: tasks.map(task => ({
-        id: task.id,
-        title: task.title,
-        status: task.status,
-        priority: task.priority,
-        assignedTo: task.assignedTo,
-        project: task.project,
-        dueDate: task.dueDate
-      }))
+      generatedDate: new Date().toISOString(),
+      summary: {
+        total: sampleTasks.length,
+        completed: tasksByStatus.find(t => t.name === "Completed")?.value || 0,
+        inProgress: tasksByStatus.find(t => t.name === "In Progress")?.value || 0,
+        pending: tasksByStatus.find(t => t.name === "Pending")?.value || 0
+      },
+      byProject: Object.fromEntries(tasksByProject.map(({ name, value }) => [name, value])),
+      byPriority: Object.fromEntries(tasksByPriority.map(({ name, value }) => [name, value])),
+      tasks: filteredTasks
     };
     
     // Convert to JSON
@@ -84,117 +205,159 @@ const TaskReport = () => {
     link.click();
     document.body.removeChild(link);
   };
-
-  if (loading) {
-    return <div>Loading task data...</div>;
-  }
   
   return (
-    <Card className="card-gradient">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <div>
-          <CardTitle>Task Analysis Report</CardTitle>
-          <CardDescription>Overview of task progress and distribution</CardDescription>
-        </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm" className="flex items-center gap-2" onClick={downloadTaskReport}>
-            <FileDown className="h-4 w-4" />
-            Export
-          </Button>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Printer className="h-4 w-4" />
-            Print
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="bg-muted/30 p-4 rounded-lg">
-            <h3 className="font-medium mb-2">Task Status</h3>
-            <div className="h-[200px]">
-              <Chart 
-                data={statusChartData} 
-                type="pie" 
-                dataKey="value" 
-                nameKey="name"
-                legendPosition="bottom"
-              />
-            </div>
-          </div>
-          
-          <div className="bg-muted/30 p-4 rounded-lg">
-            <h3 className="font-medium mb-2">Task Priority</h3>
-            <div className="h-[200px]">
-              <Chart 
-                data={priorityChartData} 
-                type="pie" 
-                dataKey="value" 
-                nameKey="name"
-                legendPosition="bottom"
-              />
-            </div>
-          </div>
-          
-          <div className="bg-muted/30 p-4 rounded-lg">
-            <h3 className="font-medium mb-2">Tasks by Project</h3>
-            <div className="h-[200px]">
-              <Chart 
-                data={projectChartData} 
-                type="pie" 
-                dataKey="value" 
-                nameKey="name"
-                legendPosition="bottom"
-              />
-            </div>
-          </div>
-        </div>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Task Report</h2>
+        <Button onClick={downloadTaskReport} variant="outline" size="sm" className="flex items-center gap-2">
+          <FileDown className="h-4 w-4" />
+          Export Report
+        </Button>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{filteredTasks.length}</div>
+            <p className="text-xs text-muted-foreground">Across all projects</p>
+          </CardContent>
+        </Card>
         
-        <h3 className="font-medium mb-4">Task Details</h3>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Project</TableHead>
-              <TableHead>Assigned To</TableHead>
-              <TableHead>Due Date</TableHead>
-              <TableHead>Priority</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {tasks.map((task) => (
-              <TableRow key={task.id}>
-                <TableCell>{task.title}</TableCell>
-                <TableCell>{task.project || 'Unassigned'}</TableCell>
-                <TableCell>{task.assignedTo || 'Unassigned'}</TableCell>
-                <TableCell>
-                  {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={
-                    task.priority === 'high' ? 'destructive' : 
-                    task.priority === 'medium' ? 'default' : 'outline'
-                  }>
-                    {task.priority}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={
-                    task.status === 'completed' ? 'success' : 
-                    task.status === 'pending' ? 'warning' : 'secondary'
-                  } className={
-                    task.status === 'completed' ? 'bg-green-500' : 
-                    task.status === 'pending' ? 'bg-amber-500' : ''
-                  }>
-                    {task.status}
-                  </Badge>
-                </TableCell>
-              </TableRow>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {Math.round((tasksByStatus.find(t => t.name === "Completed")?.value || 0) / sampleTasks.length * 100)}%
+            </div>
+            <p className="text-xs text-muted-foreground">Tasks marked as complete</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">High Priority Tasks</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {tasksByPriority.find(t => t.name === "High")?.value || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">Requiring immediate attention</p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Tasks by Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ChartContainer
+                config={{
+                  completed: { color: "#16a34a" },
+                  inProgress: { color: "#3b82f6" },
+                  pending: { color: "#d1d5db" }
+                }}
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={tasksByStatus}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip content={<ChartTooltipContent />} />
+                    <Legend />
+                    <Bar dataKey="value" name="Tasks" fill="#3b82f6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Tasks by Project</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ChartContainer config={{}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={tasksByProject}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip content={<ChartTooltipContent />} />
+                    <Legend />
+                    <Bar dataKey="value" name="Tasks" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {tasksByProject.map(project => (
+                <Button 
+                  key={project.name}
+                  variant={selectedProject === project.name ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedProject(selectedProject === project.name ? null : project.name)}
+                >
+                  {project.name} ({project.value})
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Task List {selectedProject && `- ${selectedProject}`}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4">
+            {filteredTasks.map(task => (
+              <div key={task.id} className="border rounded-lg p-4">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <h3 className="font-medium">{task.title}</h3>
+                    <p className="text-sm text-muted-foreground">{task.description}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge variant={getStatusVariant(task.status)}>
+                      {task.status === "in-progress" ? "In Progress" : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                    </Badge>
+                    <Badge variant={getPriorityVariant(task.priority)}>
+                      {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap justify-between text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Assignee:</span> {task.assignee}
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Due:</span> {new Date(task.dueDate).toLocaleDateString()}
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Project:</span> {task.project}
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Category:</span> {task.category}
+                  </div>
+                </div>
+              </div>
             ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

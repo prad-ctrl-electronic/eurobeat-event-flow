@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Calendar, ChartBar, Download, FileText, Printer } from "lucide-react";
 import TaskReport from "@/components/reports/TaskReport";
+import FinancialReport from "@/components/reports/FinancialReport";
 
 const Reports = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -33,64 +34,22 @@ const Reports = () => {
             </div>
           </div>
 
-          <Tabs defaultValue="tasks" className="space-y-4">
+          <Tabs defaultValue="financial" className="space-y-4">
             <TabsList>
-              <TabsTrigger value="tasks">Task Reports</TabsTrigger>
               <TabsTrigger value="financial">Financial Reports</TabsTrigger>
+              <TabsTrigger value="tasks">Task Reports</TabsTrigger>
               <TabsTrigger value="events">Event Reports</TabsTrigger>
               <TabsTrigger value="sales">Sales Reports</TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="financial" className="space-y-4">
+              <FinancialReport />
+            </TabsContent>
             
             <TabsContent value="tasks" className="space-y-4">
               <TaskReport />
             </TabsContent>
             
-            <TabsContent value="financial" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Card className="card-gradient">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Profit & Loss Statement
-                    </CardTitle>
-                    <CardDescription>Comprehensive P&L reports</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">View detailed profit and loss statements for all your events or the entire company.</p>
-                    <Button variant="secondary" size="sm">Generate Report</Button>
-                  </CardContent>
-                </Card>
-
-                <Card className="card-gradient">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ChartBar className="h-5 w-5" />
-                      Revenue Analysis
-                    </CardTitle>
-                    <CardDescription>Revenue breakdown by category</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">Analyze revenue streams across different categories and time periods.</p>
-                    <Button variant="secondary" size="sm">Generate Report</Button>
-                  </CardContent>
-                </Card>
-
-                <Card className="card-gradient">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5" />
-                      Quarterly Reports
-                    </CardTitle>
-                    <CardDescription>Q1-Q4 financial summaries</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">Comprehensive quarterly financial reports for tax filing and business review.</p>
-                    <Button variant="secondary" size="sm">Generate Report</Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
             <TabsContent value="events" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Card className="card-gradient">

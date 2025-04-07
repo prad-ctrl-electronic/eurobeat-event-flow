@@ -116,7 +116,7 @@ const ExpensesTabContent = () => {
             <CardDescription>Enter the details of your expense</CardDescription>
           </CardHeader>
           <CardContent>
-            <ExpenseForm onCancel={() => setShowForm(false)} />
+            <ExpenseForm onSubmit={() => setShowForm(false)} onCancel={() => setShowForm(false)} />
           </CardContent>
         </Card>
       ) : (
