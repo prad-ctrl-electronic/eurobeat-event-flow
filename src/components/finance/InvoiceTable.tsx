@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Table,
@@ -179,7 +178,7 @@ export const invoiceData = [
 
 interface Invoice {
   code: string;
-  event?: string;
+  event: string;
   supplier: string;
   invoiceNumber: string;
   taxNumber: string;
@@ -229,7 +228,6 @@ const InvoiceTable: React.FC = () => {
     }
   };
 
-  // Filter invoices by selected event
   const filterInvoicesByEvent = (eventId: string) => {
     if (eventId === "all") {
       setFilteredData(invoiceData);
@@ -239,7 +237,6 @@ const InvoiceTable: React.FC = () => {
     }
   };
 
-  // Update filter when selected event changes
   React.useEffect(() => {
     filterInvoicesByEvent(selectedEventId);
   }, [selectedEventId]);
@@ -285,7 +282,6 @@ const InvoiceTable: React.FC = () => {
       }
     });
     
-    // Auto-save status changes
     const updatedData = [...filteredData];
     updatedData[index] = {
       ...updatedData[index],
@@ -296,10 +292,8 @@ const InvoiceTable: React.FC = () => {
   };
 
   const handleSave = (index: number) => {
-    // In a real app, this would save to a database
     toast.success(`Changes to invoice ${filteredData[index].invoiceNumber} saved successfully`);
     
-    // Update the local data (in a real app this would be handled by the backend)
     const updatedData = [...filteredData];
     updatedData[index] = editedValues[index];
     setFilteredData(updatedData);
@@ -314,8 +308,6 @@ const InvoiceTable: React.FC = () => {
 
   const confirmDelete = () => {
     if (selectedInvoice !== null) {
-      // In a real app, you would delete from database
-      // For the demo, let's remove it from the local array
       const updatedData = filteredData.filter((_, idx) => idx !== selectedInvoice);
       setFilteredData(updatedData);
       
@@ -324,7 +316,6 @@ const InvoiceTable: React.FC = () => {
     }
   };
 
-  // Get status color class based on status value
   const getStatusColorClass = (status: string) => {
     switch (status.toLowerCase()) {
       case 'already paid':

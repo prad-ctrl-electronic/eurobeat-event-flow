@@ -1,217 +1,572 @@
+import { v4 as uuidv4 } from 'uuid';
 
 export interface CostItem {
   id: string;
   category: string;
+  subcategory: string;
   description: string;
+  event: string; // Add event field
   planned: number;
   actual: number;
   variance: number;
-  notes: string;
+  variancePercentage: number;
+  notes?: string;
 }
 
 export interface RevenueItem {
   id: string;
   category: string;
+  subcategory: string;
   description: string;
+  event: string; // Add event field
   planned: number;
   actual: number;
   variance: number;
-  notes: string;
+  variancePercentage: number;
+  notes?: string;
+  vatPercent?: number; // New field for VAT
 }
 
-// Sample budget data based on the CSV file
-export const budgetData: CostItem[] = [
-  {
-    id: "1",
-    category: "Venue",
-    description: "Main Hall Rental",
-    planned: 15000,
-    actual: 16200,
-    variance: -1200,
-    notes: "Price increase due to extended hours"
-  },
-  {
-    id: "2",
-    category: "Technical",
-    description: "Sound System",
-    planned: 8500,
-    actual: 8500,
-    variance: 0,
-    notes: "As per quote"
-  },
-  {
-    id: "3",
-    category: "Technical",
-    description: "Lighting Equipment",
-    planned: 6800,
-    actual: 7200,
-    variance: -400,
-    notes: "Added extra fixtures"
-  },
-  {
-    id: "4",
-    category: "Artists",
-    description: "Headliner Fee",
-    planned: 25000,
-    actual: 25000,
-    variance: 0,
-    notes: "Contract fulfilled"
-  },
-  {
-    id: "5",
-    category: "Artists",
-    description: "Supporting Acts",
-    planned: 12000,
-    actual: 10800,
-    variance: 1200,
-    notes: "One act canceled, partial refund"
-  },
-  {
-    id: "6",
-    category: "Marketing",
-    description: "Social Media Campaign",
-    planned: 5000,
-    actual: 6250,
-    variance: -1250,
-    notes: "Added extra promotion week"
-  },
-  {
-    id: "7",
-    category: "Staff",
-    description: "Security Personnel",
-    planned: 4500,
-    actual: 4950,
-    variance: -450,
-    notes: "Added 3 extra guards"
-  },
-  {
-    id: "8",
-    category: "Staff",
-    description: "Bar Staff",
-    planned: 3800,
-    actual: 3800,
-    variance: 0,
-    notes: "As planned"
-  },
-  {
-    id: "9",
-    category: "Permits",
-    description: "Alcohol License",
-    planned: 1200,
-    actual: 1200,
-    variance: 0,
-    notes: "Standard fee"
-  },
-  {
-    id: "10",
-    category: "Miscellaneous",
-    description: "Insurance",
-    planned: 2800,
-    actual: 2800,
-    variance: 0,
-    notes: "Annual policy"
+export const calculateVariance = (planned: number, actual: number): number => {
+  return actual - planned;
+};
+
+export const calculateVariancePercentage = (planned: number, actual: number): number => {
+  if (planned === 0) {
+    return actual === 0 ? 0 : Infinity;
   }
-];
-
-// Revenue data
-export const revenueData: RevenueItem[] = [
-  {
-    id: "1",
-    category: "Ticket Sales",
-    description: "Pre-sale Tickets",
-    planned: 45000,
-    actual: 48200,
-    variance: 3200,
-    notes: "Higher than expected sales"
-  },
-  {
-    id: "2",
-    category: "Ticket Sales",
-    description: "Door Sales",
-    planned: 15000,
-    actual: 12800,
-    variance: -2200,
-    notes: "Bad weather affected walk-ins"
-  },
-  {
-    id: "3",
-    category: "Bar",
-    description: "Drink Sales",
-    planned: 35000,
-    actual: 42500,
-    variance: 7500,
-    notes: "Higher consumption than projected"
-  },
-  {
-    id: "4",
-    category: "Merchandise",
-    description: "Event Merchandise",
-    planned: 8000,
-    actual: 9400,
-    variance: 1400,
-    notes: "New t-shirt design sold well"
-  },
-  {
-    id: "5",
-    category: "Sponsorships",
-    description: "Main Sponsor",
-    planned: 20000,
-    actual: 20000,
-    variance: 0,
-    notes: "Contract fulfilled"
-  }
-];
-
-export const getUniqueCategories = (): string[] => {
-  return [...new Set([
-    ...budgetData.map(item => item.category),
-    ...revenueData.map(item => item.category)
-  ])];
+  return ((actual - planned) / planned) * 100;
 };
 
-export const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-EU', { 
-    style: 'currency', 
-    currency: 'EUR',
-    minimumFractionDigits: 2 
-  }).format(amount);
-};
+export const addCostItem = (
+  category: string,
+  subcategory: string,
+  description: string,
+  event: string,
+  planned: number,
+  actual: number,
+  notes?: string
+): CostItem => {
+  const variance = calculateVariance(planned, actual);
+  const variancePercentage = calculateVariancePercentage(planned, actual);
 
-export const getVarianceClass = (variance: number): string => {
-  return variance < 0 
-    ? "text-red-500" 
-    : variance > 0 
-      ? "text-green-500" 
-      : "text-muted-foreground";
-};
-
-export const calculateSummary = () => {
-  const totalPlannedCost = budgetData.reduce((sum, item) => sum + item.planned, 0);
-  const totalActualCost = budgetData.reduce((sum, item) => sum + item.actual, 0);
-  const totalCostVariance = budgetData.reduce((sum, item) => sum + item.variance, 0);
-  
-  const totalPlannedRevenue = revenueData.reduce((sum, item) => sum + item.planned, 0);
-  const totalActualRevenue = revenueData.reduce((sum, item) => sum + item.actual, 0);
-  const totalRevenueVariance = revenueData.reduce((sum, item) => sum + item.variance, 0);
-  
-  const plannedProfit = totalPlannedRevenue - totalPlannedCost;
-  const actualProfit = totalActualRevenue - totalActualCost;
-  const profitVariance = totalRevenueVariance - totalCostVariance;
-  
-  const profitMarginPlanned = ((plannedProfit / totalPlannedRevenue) * 100).toFixed(2);
-  const profitMarginActual = ((actualProfit / totalActualRevenue) * 100).toFixed(2);
-  
   return {
-    totalPlannedCost,
-    totalActualCost,
-    totalCostVariance,
-    totalPlannedRevenue,
-    totalActualRevenue,
-    totalRevenueVariance,
-    plannedProfit,
-    actualProfit,
-    profitVariance,
-    profitMarginPlanned,
-    profitMarginActual
+    id: uuidv4(),
+    category,
+    subcategory,
+    description,
+    event,
+    planned,
+    actual,
+    variance,
+    variancePercentage,
+    notes,
   };
 };
+
+export const addRevenueItem = (
+  category: string,
+  subcategory: string,
+  description: string,
+  event: string,
+  planned: number,
+  actual: number,
+  notes?: string,
+  vatPercent: number = 0
+): RevenueItem => {
+  const variance = calculateVariance(planned, actual);
+  const variancePercentage = calculateVariancePercentage(planned, actual);
+
+  return {
+    id: uuidv4(),
+    category,
+    subcategory,
+    description,
+    event,
+    planned,
+    actual,
+    variance,
+    variancePercentage,
+    notes,
+    vatPercent,
+  };
+};
+
+// Update sample data to include event field
+export const costsData: CostItem[] = [
+  {
+    id: "c1",
+    category: "Artist Fees",
+    subcategory: "DJ",
+    description: "Main headliner fee",
+    event: "tf-2025",
+    planned: 5000,
+    actual: 5500,
+    variance: -500,
+    variancePercentage: -10,
+    notes: "Rate increased due to recent chart success"
+  },
+  {
+    id: "c2",
+    category: "Venue Rental",
+    subcategory: "Main Hall",
+    description: "Rental fee for the main hall",
+    event: "tf-2025",
+    planned: 3000,
+    actual: 3000,
+    variance: 0,
+    variancePercentage: 0
+  },
+  {
+    id: "c3",
+    category: "Marketing",
+    subcategory: "Social Media Ads",
+    description: "Advertising campaign on Facebook and Instagram",
+    event: "tf-2025",
+    planned: 1500,
+    actual: 1200,
+    variance: 300,
+    variancePercentage: 20,
+    notes: "Campaign was more efficient than expected"
+  },
+  {
+    id: "c4",
+    category: "Security",
+    subcategory: "Guards",
+    description: "Security personnel for the event",
+    event: "tf-2025",
+    planned: 2000,
+    actual: 2200,
+    variance: -200,
+    variancePercentage: -10
+  },
+  {
+    id: "c5",
+    category: "Logistics",
+    subcategory: "Transportation",
+    description: "Transportation costs for equipment and staff",
+    event: "tf-2025",
+    planned: 800,
+    actual: 750,
+    variance: 50,
+    variancePercentage: 6.25
+  },
+  {
+    id: "c6",
+    category: "Artist Fees",
+    subcategory: "DJ",
+    description: "Main headliner fee",
+    event: "bn-2025",
+    planned: 5000,
+    actual: 5500,
+    variance: -500,
+    variancePercentage: -10,
+    notes: "Rate increased due to recent chart success"
+  },
+  {
+    id: "c7",
+    category: "Venue Rental",
+    subcategory: "Main Hall",
+    description: "Rental fee for the main hall",
+    event: "bn-2025",
+    planned: 3000,
+    actual: 3000,
+    variance: 0,
+    variancePercentage: 0
+  },
+  {
+    id: "c8",
+    category: "Marketing",
+    subcategory: "Social Media Ads",
+    description: "Advertising campaign on Facebook and Instagram",
+    event: "bn-2025",
+    planned: 1500,
+    actual: 1200,
+    variance: 300,
+    variancePercentage: 20,
+    notes: "Campaign was more efficient than expected"
+  },
+  {
+    id: "c9",
+    category: "Security",
+    subcategory: "Guards",
+    description: "Security personnel for the event",
+    event: "bn-2025",
+    planned: 2000,
+    actual: 2200,
+    variance: -200,
+    variancePercentage: -10
+  },
+  {
+    id: "c10",
+    category: "Logistics",
+    subcategory: "Transportation",
+    description: "Transportation costs for equipment and staff",
+    event: "bn-2025",
+    planned: 800,
+    actual: 750,
+    variance: 50,
+    variancePercentage: 6.25
+  },
+  {
+    id: "c11",
+    category: "Artist Fees",
+    subcategory: "DJ",
+    description: "Main headliner fee",
+    event: "es-2025",
+    planned: 5000,
+    actual: 5500,
+    variance: -500,
+    variancePercentage: -10,
+    notes: "Rate increased due to recent chart success"
+  },
+  {
+    id: "c12",
+    category: "Venue Rental",
+    subcategory: "Main Hall",
+    description: "Rental fee for the main hall",
+    event: "es-2025",
+    planned: 3000,
+    actual: 3000,
+    variance: 0,
+    variancePercentage: 0
+  },
+  {
+    id: "c13",
+    category: "Marketing",
+    subcategory: "Social Media Ads",
+    description: "Advertising campaign on Facebook and Instagram",
+    event: "es-2025",
+    planned: 1500,
+    actual: 1200,
+    variance: 300,
+    variancePercentage: 20,
+    notes: "Campaign was more efficient than expected"
+  },
+  {
+    id: "c14",
+    category: "Security",
+    subcategory: "Guards",
+    description: "Security personnel for the event",
+    event: "es-2025",
+    planned: 2000,
+    actual: 2200,
+    variance: -200,
+    variancePercentage: -10
+  },
+  {
+    id: "c15",
+    category: "Logistics",
+    subcategory: "Transportation",
+    description: "Transportation costs for equipment and staff",
+    event: "es-2025",
+    planned: 800,
+    actual: 750,
+    variance: 50,
+    variancePercentage: 6.25
+  },
+  {
+    id: "c16",
+    category: "Artist Fees",
+    subcategory: "DJ",
+    description: "Main headliner fee",
+    event: "boiler-room",
+    planned: 5000,
+    actual: 5500,
+    variance: -500,
+    variancePercentage: -10,
+    notes: "Rate increased due to recent chart success"
+  },
+  {
+    id: "c17",
+    category: "Venue Rental",
+    subcategory: "Main Hall",
+    description: "Rental fee for the main hall",
+    event: "boiler-room",
+    planned: 3000,
+    actual: 3000,
+    variance: 0,
+    variancePercentage: 0
+  },
+  {
+    id: "c18",
+    category: "Marketing",
+    subcategory: "Social Media Ads",
+    description: "Advertising campaign on Facebook and Instagram",
+    event: "boiler-room",
+    planned: 1500,
+    actual: 1200,
+    variance: 300,
+    variancePercentage: 20,
+    notes: "Campaign was more efficient than expected"
+  },
+  {
+    id: "c19",
+    category: "Security",
+    subcategory: "Guards",
+    description: "Security personnel for the event",
+    event: "boiler-room",
+    planned: 2000,
+    actual: 2200,
+    variance: -200,
+    variancePercentage: -10
+  },
+  {
+    id: "c20",
+    category: "Logistics",
+    subcategory: "Transportation",
+    description: "Transportation costs for equipment and staff",
+    event: "boiler-room",
+    planned: 800,
+    actual: 750,
+    variance: 50,
+    variancePercentage: 6.25
+  },
+];
+
+// Add event field to other items in costsData
+
+export const revenueData: RevenueItem[] = [
+  {
+    id: "r1",
+    category: "Ticket Sales",
+    subcategory: "Early Bird",
+    description: "First batch tickets",
+    event: "tf-2025",
+    planned: 10000,
+    actual: 12500,
+    variance: 2500,
+    variancePercentage: 25,
+    vatPercent: 23
+  },
+  {
+    id: "r2",
+    category: "Sponsorship",
+    subcategory: "Main Sponsor",
+    description: "Sponsorship fee from main sponsor",
+    event: "tf-2025",
+    planned: 5000,
+    actual: 5000,
+    variance: 0,
+    variancePercentage: 0,
+    vatPercent: 0
+  },
+  {
+    id: "r3",
+    category: "Merchandise",
+    subcategory: "T-Shirts",
+    description: "Sales from T-shirts",
+    event: "tf-2025",
+    planned: 2000,
+    actual: 2200,
+    variance: 200,
+    variancePercentage: 10,
+    vatPercent: 23
+  },
+  {
+    id: "r4",
+    category: "Bar Sales",
+    subcategory: "Alcohol",
+    description: "Sales from alcohol",
+    event: "tf-2025",
+    planned: 4000,
+    actual: 4500,
+    variance: 500,
+    variancePercentage: 12.5,
+    vatPercent: 23
+  },
+  {
+    id: "r5",
+    category: "Food Sales",
+    subcategory: "Snacks",
+    description: "Sales from snacks",
+    event: "tf-2025",
+    planned: 1500,
+    actual: 1600,
+    variance: 100,
+    variancePercentage: 6.67,
+    vatPercent: 5
+  },
+  {
+    id: "r6",
+    category: "Ticket Sales",
+    subcategory: "Early Bird",
+    description: "First batch tickets",
+    event: "bn-2025",
+    planned: 10000,
+    actual: 12500,
+    variance: 2500,
+    variancePercentage: 25,
+    vatPercent: 23
+  },
+  {
+    id: "r7",
+    category: "Sponsorship",
+    subcategory: "Main Sponsor",
+    description: "Sponsorship fee from main sponsor",
+    event: "bn-2025",
+    planned: 5000,
+    actual: 5000,
+    variance: 0,
+    variancePercentage: 0,
+    vatPercent: 0
+  },
+  {
+    id: "r8",
+    category: "Merchandise",
+    subcategory: "T-Shirts",
+    description: "Sales from T-shirts",
+    event: "bn-2025",
+    planned: 2000,
+    actual: 2200,
+    variance: 200,
+    variancePercentage: 10,
+    vatPercent: 23
+  },
+  {
+    id: "r9",
+    category: "Bar Sales",
+    subcategory: "Alcohol",
+    description: "Sales from alcohol",
+    event: "bn-2025",
+    planned: 4000,
+    actual: 4500,
+    variance: 500,
+    variancePercentage: 12.5,
+    vatPercent: 23
+  },
+  {
+    id: "r10",
+    category: "Food Sales",
+    subcategory: "Snacks",
+    description: "Sales from snacks",
+    event: "bn-2025",
+    planned: 1500,
+    actual: 1600,
+    variance: 100,
+    variancePercentage: 6.67,
+    vatPercent: 5
+  },
+  {
+    id: "r11",
+    category: "Ticket Sales",
+    subcategory: "Early Bird",
+    description: "First batch tickets",
+    event: "es-2025",
+    planned: 10000,
+    actual: 12500,
+    variance: 2500,
+    variancePercentage: 25,
+    vatPercent: 23
+  },
+  {
+    id: "r12",
+    category: "Sponsorship",
+    subcategory: "Main Sponsor",
+    description: "Sponsorship fee from main sponsor",
+    event: "es-2025",
+    planned: 5000,
+    actual: 5000,
+    variance: 0,
+    variancePercentage: 0,
+    vatPercent: 0
+  },
+  {
+    id: "r13",
+    category: "Merchandise",
+    subcategory: "T-Shirts",
+    description: "Sales from T-shirts",
+    event: "es-2025",
+    planned: 2000,
+    actual: 2200,
+    variance: 200,
+    variancePercentage: 10,
+    vatPercent: 23
+  },
+  {
+    id: "r14",
+    category: "Bar Sales",
+    subcategory: "Alcohol",
+    description: "Sales from alcohol",
+    event: "es-2025",
+    planned: 4000,
+    actual: 4500,
+    variance: 500,
+    variancePercentage: 12.5,
+    vatPercent: 23
+  },
+  {
+    id: "r15",
+    category: "Food Sales",
+    subcategory: "Snacks",
+    description: "Sales from snacks",
+    event: "es-2025",
+    planned: 1500,
+    actual: 1600,
+    variance: 100,
+    variancePercentage: 6.67,
+    vatPercent: 5
+  },
+  {
+    id: "r16",
+    category: "Ticket Sales",
+    subcategory: "Early Bird",
+    description: "First batch tickets",
+    event: "boiler-room",
+    planned: 10000,
+    actual: 12500,
+    variance: 2500,
+    variancePercentage: 25,
+    vatPercent: 23
+  },
+  {
+    id: "r17",
+    category: "Sponsorship",
+    subcategory: "Main Sponsor",
+    description: "Sponsorship fee from main sponsor",
+    event: "boiler-room",
+    planned: 5000,
+    actual: 5000,
+    variance: 0,
+    variancePercentage: 0,
+    vatPercent: 0
+  },
+  {
+    id: "r18",
+    category: "Merchandise",
+    subcategory: "T-Shirts",
+    description: "Sales from T-shirts",
+    event: "boiler-room",
+    planned: 2000,
+    actual: 2200,
+    variance: 200,
+    variancePercentage: 10,
+    vatPercent: 23
+  },
+  {
+    id: "r19",
+    category: "Bar Sales",
+    subcategory: "Alcohol",
+    description: "Sales from alcohol",
+    event: "boiler-room",
+    planned: 4000,
+    actual: 4500,
+    variance: 500,
+    variancePercentage: 12.5,
+    vatPercent: 23
+  },
+  {
+    id: "r20",
+    category: "Food Sales",
+    subcategory: "Snacks",
+    description: "Sales from snacks",
+    event: "boiler-room",
+    planned: 1500,
+    actual: 1600,
+    variance: 100,
+    variancePercentage: 6.67,
+    vatPercent: 5
+  },
+];
+
+// Add event field to other items in revenueData

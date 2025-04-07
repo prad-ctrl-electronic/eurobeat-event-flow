@@ -6,9 +6,13 @@ import FinancialOverview from "@/components/dashboard/FinancialOverview";
 import RevenueChart from "@/components/dashboard/RevenueChart";
 import EventsList from "@/components/dashboard/EventsList";
 import FinancialTasks from "@/components/dashboard/FinancialTasks";
+import VendorOverview from "@/components/dashboard/VendorOverview";
+import EventFilter from "@/components/EventFilter";
+import { useEvent } from "@/contexts/EventContext";
 
 const DashboardPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { selectedEventId, setSelectedEventId } = useEvent();
 
   return (
     <div className="min-h-screen bg-background">
@@ -18,7 +22,15 @@ const DashboardPage = () => {
         <AppHeader toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         
         <main className="container mx-auto py-6 px-4">
-          <h1 className="text-3xl font-bold tracking-tight mb-6">Dashboard</h1>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            
+            <EventFilter 
+              selectedEvent={selectedEventId}
+              onEventChange={setSelectedEventId}
+              className="w-full md:w-auto"
+            />
+          </div>
           
           <div className="space-y-6">
             <FinancialOverview />
@@ -37,10 +49,7 @@ const DashboardPage = () => {
                 <EventsList />
               </div>
               <div>
-                {/* Placeholder for additional widget */}
-                <div className="card-gradient rounded-xl h-full min-h-[200px] flex items-center justify-center">
-                  <p className="text-muted-foreground">Additional metrics will appear here</p>
-                </div>
+                <VendorOverview />
               </div>
             </div>
           </div>

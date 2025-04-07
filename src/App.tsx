@@ -6,6 +6,8 @@ import Events from "@/pages/Events";
 import Tasks from "@/pages/Tasks";
 import Reports from "@/pages/Reports";
 import Staffing from "@/pages/Staffing";
+import VendorManagement from "@/pages/VendorManagement";
+import VendorDetail from "@/pages/VendorDetail";
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
@@ -27,6 +29,8 @@ function App() {
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/staffing" element={<Staffing />} />
+            <Route path="/vendors" element={<VendorManagement />} />
+            <Route path="/vendors/:id" element={<VendorDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/verify-email" element={<VerifyEmail />} />

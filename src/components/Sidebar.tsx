@@ -11,7 +11,8 @@ import {
   CheckSquare,
   Settings,
   ChevronLeft,
-  Music
+  Music,
+  Building,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -82,6 +83,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             icon={<Users className="h-5 w-5" />} 
             label="Staffing" 
             to="/staffing" 
+          />
+          <NavItem 
+            icon={<Building className="h-5 w-5" />} 
+            label="Vendors" 
+            to="/vendors" 
           />
           <NavItem 
             icon={<CheckSquare className="h-5 w-5" />} 
