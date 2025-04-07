@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Finance from "./pages/Finance";
 import Events from "./pages/Events";
 import Staffing from "./pages/Staffing";
+import Tasks from "./pages/Tasks";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/finance" element={<Finance />} />
           <Route path="/events" element={<Events />} />
           <Route path="/staffing" element={<Staffing />} />
+          <Route path="/tasks" element={<Tasks />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
