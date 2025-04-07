@@ -564,13 +564,14 @@ const CombinedValuationTab: React.FC<{
   const handleDownload = () => {
     if (!result) return;
     
-    const downloadData = {
+    const valuationData = {
       valuationMethods: result.breakdown,
       weightedAverage: result.weightedAverage,
       calculatedOn: new Date().toISOString()
     };
     
-    downloadData(downloadData, "company-valuation.json");
+    // Use the imported downloadData function with the valuationData object
+    downloadData(valuationData, "company-valuation.json");
     toast.success("Valuation data downloaded");
   };
 
@@ -730,4 +731,3 @@ const CompanyValuation: React.FC = () => {
 };
 
 export default CompanyValuation;
-
