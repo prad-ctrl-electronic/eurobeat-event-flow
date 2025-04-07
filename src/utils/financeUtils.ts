@@ -29,17 +29,30 @@ export const downloadData = (data: any, filename: string) => {
   document.body.removeChild(link);
 };
 
-// Generate default company valuation data based on financial metrics
+// Updated to accept the actual invoice structure
 export const generateDefaultValuationData = (
   revenueData: { actual: number }[] = [], 
   budgetData: { actual: number }[] = [],
-  invoiceData: { amount: number }[] = [],
+  invoiceData: { 
+    amountGross: string;
+    currency: string; 
+    amountPLN: string;
+    // ... other invoice properties that might be present
+    [key: string]: any;
+  }[] = [],
   loansData: { outstandingAmount: number, interestRate: number }[] = []
 ) => {
   // Calculate key financial metrics
   const totalRevenue = revenueData.reduce((sum, item) => sum + item.actual, 0) || 248540; // Fallback to value from FinancialOverview
   const totalExpenses = budgetData.reduce((sum, item) => sum + item.actual, 0) || 84600;
-  const outstandingInvoices = invoiceData.reduce((sum, item) => sum + item.amount, 0) || 0;
+  
+  // Extract invoice amounts correctly - parse the string amounts to numbers
+  const outstandingInvoices = invoiceData.reduce((sum, item) => {
+    // Use amountPLN for consistency in currency
+    const amount = parseFloat(item.amountPLN.replace(/,/g, ""));
+    return isNaN(amount) ? sum : sum + amount;
+  }, 0) || 0;
+  
   const outstandingDebt = loansData.reduce((sum, loan) => sum + loan.outstandingAmount, 0) || 0;
   
   // Calculate profit metrics
