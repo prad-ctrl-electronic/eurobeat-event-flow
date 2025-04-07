@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Euro, Plus, FileInput, Calculator } from "lucide-react";
+import InvoiceTable from "@/components/finance/InvoiceTable";
 
 const Finance = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -37,6 +38,7 @@ const Finance = () => {
             <TabsList className="bg-muted/40 mb-4">
               <TabsTrigger value="expenses">Expenses</TabsTrigger>
               <TabsTrigger value="revenues">Revenues</TabsTrigger>
+              <TabsTrigger value="invoices">Invoices</TabsTrigger>
               <TabsTrigger value="taxes">Taxes</TabsTrigger>
               <TabsTrigger value="profitloss">Profit & Loss</TabsTrigger>
             </TabsList>
@@ -171,6 +173,18 @@ const Finance = () => {
               <div className="grid-card min-h-[400px] flex items-center justify-center">
                 <p className="text-muted-foreground">Revenue management will appear here</p>
               </div>
+            </TabsContent>
+            
+            <TabsContent value="invoices">
+              <Card className="card-gradient">
+                <CardHeader>
+                  <CardTitle>Invoice Register</CardTitle>
+                  <CardDescription>Manage all your company invoices</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <InvoiceTable />
+                </CardContent>
+              </Card>
             </TabsContent>
             
             <TabsContent value="taxes">
