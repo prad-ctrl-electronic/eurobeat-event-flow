@@ -12,16 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface CostItem {
-  id: string;
-  category: string;
-  description: string;
-  planned: number;
-  actual: number;
-  variance: number;
-  notes: string;
-}
+import { CostItem } from "./budgetData";
 
 interface CostsAnalysisTableProps {
   filteredCosts: CostItem[];
