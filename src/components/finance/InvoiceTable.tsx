@@ -11,7 +11,13 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, FileDown, Printer } from "lucide-react";
+import { Search, FileDown, Printer, Info } from "lucide-react";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Sample data from the CSV
 const invoiceData = [
@@ -146,6 +152,7 @@ const invoiceData = [
 const InvoiceTable: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState(invoiceData);
+  const [showComments, setShowComments] = useState(false);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase();
@@ -174,17 +181,31 @@ const InvoiceTable: React.FC = () => {
       .toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
+  const toggleComments = () => {
+    setShowComments(!showComments);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search invoices..."
-            className="pl-9"
-            value={searchTerm}
-            onChange={handleSearch}
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search invoices..."
+              className="pl-9"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className={showComments ? "bg-muted" : ""}
+            onClick={toggleComments}
+          >
+            {showComments ? "Hide Comments" : "Show Comments"}
+          </Button>
         </div>
         
         <div className="flex gap-2">
@@ -219,6 +240,7 @@ const InvoiceTable: React.FC = () => {
               <TableHead className="text-right">Amount (PLN)</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Payment Date</TableHead>
+              {showComments && <TableHead>Comments</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -239,11 +261,32 @@ const InvoiceTable: React.FC = () => {
                     </span>
                   </TableCell>
                   <TableCell>{invoice.paymentDate}</TableCell>
+                  {showComments && (
+                    <TableCell>
+                      {invoice.comment ? (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-1 cursor-pointer">
+                                <Info className="h-4 w-4" />
+                                <span className="truncate max-w-[100px]">{invoice.comment}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-[300px]">{invoice.comment}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        <span className="text-muted-foreground">No comment</span>
+                      )}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={10} className="text-center h-24">
+                <TableCell colSpan={showComments ? 11 : 10} className="text-center h-24">
                   No invoices found matching your search.
                 </TableCell>
               </TableRow>

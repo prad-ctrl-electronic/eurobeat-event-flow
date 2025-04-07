@@ -7,16 +7,48 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Euro, Plus, FileInput, Calculator, BarChart4, Calendar, Tag, Wallet, Ticket } from "lucide-react";
+import { Euro, Plus, FileInput, Calculator, BarChart4, Calendar, Tag, Wallet } from "lucide-react";
 import InvoiceTable from "@/components/finance/InvoiceTable";
 import BudgetAnalysis from "@/components/finance/BudgetAnalysis";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import RevenueManager from "@/components/finance/RevenueManager";
+import { toast } from "sonner";
 
 const Finance = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [netAmount, setNetAmount] = useState("");
+  const [vatRate, setVatRate] = useState("");
+  const [grossAmount, setGrossAmount] = useState("");
+
+  // Calculate gross amount when net amount or VAT rate changes
+  const calculateGrossAmount = (net: string, vat: string) => {
+    if (net && vat) {
+      const netValue = parseFloat(net.replace(/,/g, ''));
+      const vatValue = parseFloat(vat);
+      
+      if (!isNaN(netValue) && !isNaN(vatValue)) {
+        const gross = netValue * (1 + vatValue / 100);
+        return gross.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+    }
+    return "";
+  };
+
+  // Handle net amount change
+  const handleNetAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newNetAmount = e.target.value;
+    setNetAmount(newNetAmount);
+    setGrossAmount(calculateGrossAmount(newNetAmount, vatRate));
+  };
+
+  // Handle VAT rate change
+  const handleVatRateChange = (value: string) => {
+    setVatRate(value);
+    setGrossAmount(calculateGrossAmount(netAmount, value));
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -49,6 +81,7 @@ const Finance = () => {
               <TabsTrigger value="budgeting">Budgeting</TabsTrigger>
               <TabsTrigger value="taxes">Taxes</TabsTrigger>
               <TabsTrigger value="profitloss">Profit & Loss</TabsTrigger>
+              <TabsTrigger value="miscellaneous">Miscellaneous</TabsTrigger>
             </TabsList>
             
             <TabsContent value="expenses">
@@ -59,7 +92,14 @@ const Finance = () => {
                     <CardDescription>Enter the details of your expense</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <form className="space-y-4">
+                    <form className="space-y-4" onSubmit={(e) => {
+                      e.preventDefault();
+                      toast.success("Expense added successfully");
+                      // Reset form fields
+                      setNetAmount("");
+                      setVatRate("");
+                      setGrossAmount("");
+                    }}>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="event">Related Event</Label>
@@ -98,7 +138,7 @@ const Finance = () => {
                         
                         <div className="space-y-2">
                           <Label htmlFor="vat">VAT %</Label>
-                          <Select>
+                          <Select onValueChange={handleVatRateChange} value={vatRate}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select VAT rate" />
                             </SelectTrigger>
@@ -117,7 +157,13 @@ const Finance = () => {
                           <Label htmlFor="amount">Net Amount</Label>
                           <div className="relative">
                             <Euro className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input id="amount" placeholder="0.00" className="pl-9" />
+                            <Input 
+                              id="amount" 
+                              placeholder="0.00" 
+                              className="pl-9" 
+                              value={netAmount}
+                              onChange={handleNetAmountChange}
+                            />
                           </div>
                         </div>
                         
@@ -125,7 +171,13 @@ const Finance = () => {
                           <Label htmlFor="gross">Gross Amount</Label>
                           <div className="relative">
                             <Euro className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input id="gross" placeholder="0.00" className="pl-9" />
+                            <Input 
+                              id="gross" 
+                              placeholder="0.00" 
+                              className="pl-9" 
+                              value={grossAmount}
+                              readOnly
+                            />
                           </div>
                         </div>
                         
@@ -153,11 +205,20 @@ const Finance = () => {
                             </Button>
                           </div>
                         </div>
+                        
+                        <div className="space-y-2 col-span-2">
+                          <Label htmlFor="description">Description/Comments</Label>
+                          <Textarea 
+                            id="description" 
+                            placeholder="Add any additional details or notes about this expense"
+                            rows={3}
+                          />
+                        </div>
                       </div>
                       
                       <div className="flex justify-end gap-2 mt-6">
-                        <Button variant="outline">Cancel</Button>
-                        <Button>Save Expense</Button>
+                        <Button variant="outline" type="button">Cancel</Button>
+                        <Button type="submit">Save Expense</Button>
                       </div>
                     </form>
                   </CardContent>
@@ -215,6 +276,75 @@ const Finance = () => {
               <div className="grid-card min-h-[400px] flex items-center justify-center">
                 <p className="text-muted-foreground">Profit & Loss statements will appear here</p>
               </div>
+            </TabsContent>
+            
+            <TabsContent value="miscellaneous">
+              <Card className="card-gradient">
+                <CardHeader>
+                  <CardTitle>Miscellaneous Expenses</CardTitle>
+                  <CardDescription>Record any one-off or irregular expenses</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="misc-expense-name">Expense Name</Label>
+                        <Input id="misc-expense-name" placeholder="e.g. Office Supplies" />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="misc-category">Category</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="office">Office</SelectItem>
+                            <SelectItem value="travel">Travel</SelectItem>
+                            <SelectItem value="meals">Meals & Entertainment</SelectItem>
+                            <SelectItem value="subscriptions">Subscriptions</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="misc-amount">Amount</Label>
+                        <div className="relative">
+                          <Euro className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Input id="misc-amount" placeholder="0.00" className="pl-9" />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="misc-date">Date</Label>
+                        <Input id="misc-date" type="date" />
+                      </div>
+                      
+                      <div className="space-y-2 col-span-2">
+                        <Label htmlFor="misc-description">Description</Label>
+                        <Textarea 
+                          id="misc-description" 
+                          placeholder="Add details about this expense"
+                          rows={3}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end gap-2 mt-6">
+                      <Button variant="outline">Cancel</Button>
+                      <Button>Save Expense</Button>
+                    </div>
+                  </form>
+                  
+                  <div className="mt-6 border-t pt-6">
+                    <h3 className="font-medium text-lg mb-4">Recent Miscellaneous Expenses</h3>
+                    <div className="text-sm text-muted-foreground text-center py-8">
+                      No miscellaneous expenses recorded yet.
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </main>
