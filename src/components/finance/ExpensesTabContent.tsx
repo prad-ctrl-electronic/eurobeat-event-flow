@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import ExpenseForm from "./ExpenseForm";
@@ -115,9 +116,12 @@ const ExpensesTabContent = () => {
             <CardDescription>Enter the details of your expense</CardDescription>
           </CardHeader>
           <CardContent>
-            <ExpenseForm 
-              onCancel={() => setShowForm(false)} 
-            />
+            <ExpenseForm />
+            <div className="flex justify-end mt-4">
+              <Button variant="outline" onClick={() => setShowForm(false)} className="mr-2">
+                Cancel
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ) : (

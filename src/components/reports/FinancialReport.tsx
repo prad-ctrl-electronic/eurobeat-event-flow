@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { FileText, Download, Printer, ArrowUpDown, Filter, FileExcel } from "lucide-react";
+import { FileText, Download, Printer, ArrowUpDown, Filter } from "lucide-react";
 import { 
   ChartContainer, 
   ChartTooltip,
@@ -341,7 +341,7 @@ const FinancialReport: React.FC = () => {
             Print
           </Button>
           <Button onClick={downloadExcelReport} size="sm" className="flex items-center gap-2">
-            <FileExcel className="h-4 w-4" />
+            <FileText className="h-4 w-4" />
             Excel
           </Button>
         </div>
@@ -676,7 +676,7 @@ const FinancialReport: React.FC = () => {
       
       <CardFooter className="pt-6 print:hidden">
         <Button onClick={downloadExcelReport} className="flex items-center gap-2">
-          <FileExcel className="h-4 w-4" />
+          <FileText className="h-4 w-4" />
           Download Excel Report
         </Button>
       </CardFooter>
