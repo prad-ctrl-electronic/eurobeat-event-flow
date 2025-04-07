@@ -1,5 +1,3 @@
-
-
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-EU', { 
     style: 'currency', 
@@ -29,6 +27,62 @@ export const downloadData = (data: any, filename: string) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+};
+
+// Generate default company valuation data based on financial metrics
+export const generateDefaultValuationData = (
+  revenueData: { actual: number }[] = [], 
+  budgetData: { actual: number }[] = [],
+  invoiceData: { amount: number }[] = [],
+  loansData: { outstandingAmount: number, interestRate: number }[] = []
+) => {
+  // Calculate key financial metrics
+  const totalRevenue = revenueData.reduce((sum, item) => sum + item.actual, 0) || 248540; // Fallback to value from FinancialOverview
+  const totalExpenses = budgetData.reduce((sum, item) => sum + item.actual, 0) || 84600;
+  const outstandingInvoices = invoiceData.reduce((sum, item) => sum + item.amount, 0) || 0;
+  const outstandingDebt = loansData.reduce((sum, loan) => sum + loan.outstandingAmount, 0) || 0;
+  
+  // Calculate profit metrics
+  const ebitda = totalRevenue - totalExpenses || totalRevenue * 0.248; // Fallback to 24.8% EBITDA from FinancialOverview
+  const ebitdaMargin = (ebitda / totalRevenue) * 100;
+  
+  // Cash flow projections (simple growth model)
+  const growthRate = 0.1; // 10% annual growth
+  const cashFlowProjections = [
+    ebitda,
+    ebitda * (1 + growthRate),
+    ebitda * (1 + growthRate) ** 2,
+    ebitda * (1 + growthRate) ** 3,
+    ebitda * (1 + growthRate) ** 4
+  ];
+  
+  // Industry averages (default values)
+  const industryPERatio = 15;
+  const industryEVToEBITDA = 8;
+  const industryEVToRevenue = 2;
+
+  // Default dividend values
+  const dividendPayout = ebitda * 0.3; // 30% of earnings paid as dividends
+  const dividendPerShare = dividendPayout / 1000000; // Assuming 1M shares
+  const dividendGrowthRate = 0.05; // 5% annual growth
+  
+  return {
+    cash_flows: cashFlowProjections.join(','),
+    discount_rate: 0.1,
+    terminal_growth_rate: 0.03,
+    outstanding_shares: 1000000,
+    revenue: totalRevenue,
+    ebitda: ebitda,
+    earnings_per_share: ebitda / 1000000, // Assuming 1M shares
+    industry_pe_ratio: industryPERatio,
+    industry_ev_to_ebitda: industryEVToEBITDA,
+    industry_ev_to_revenue: industryEVToRevenue,
+    total_assets: totalRevenue * 1.5, // Simple estimate
+    total_liabilities: outstandingDebt + (totalExpenses * 0.4), // Outstanding debt + estimated current liabilities
+    current_dividend: dividendPerShare,
+    dividend_growth_rate: dividendGrowthRate,
+    required_rate: 0.1
+  };
 };
 
 // Company Valuation Calculation Methods
@@ -150,4 +204,3 @@ export const calculateWeightedValuation = (
   
   return { weightedAverage, breakdown };
 };
-

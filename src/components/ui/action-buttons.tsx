@@ -17,6 +17,7 @@ interface ActionButtonsProps {
   size?: "default" | "sm" | "lg" | "icon";
   isEditing?: boolean;
   disabled?: boolean;
+  className?: string;
 }
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -27,9 +28,10 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   size = "sm",
   isEditing = false,
   disabled = false,
+  className = "",
 }) => {
   return (
-    <div className="flex items-center gap-2">
+    <div className={`flex items-center gap-2 ${className}`}>
       {!isEditing && onEdit && (
         <TooltipProvider>
           <Tooltip>

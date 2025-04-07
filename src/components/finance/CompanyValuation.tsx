@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,24 +12,36 @@ import {
   calculateAssetBased,
   calculateDDM,
   calculateWeightedValuation,
-  downloadData
+  downloadData,
+  generateDefaultValuationData
 } from "@/utils/financeUtils";
-import { FileDown, Calculator, ChartBar, TrendingUp, DollarSign } from "lucide-react";
+import { FileDown, Calculator, ChartBar, TrendingUp, DollarSign, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
+import { budgetData, revenueData } from "@/components/finance/budget/budgetData";
+import { invoiceData } from "@/components/finance/InvoiceTable";
+import { loansData } from "@/utils/debtUtils";
 
 // DCF Model Component
 const DCFModelTab: React.FC<{
-  updateValuation: (method: string, value: number) => void
-}> = ({ updateValuation }) => {
-  const [cashFlows, setCashFlows] = useState<string>("500000,550000,600000,650000,700000");
-  const [discountRate, setDiscountRate] = useState<number>(0.1);
-  const [terminalGrowthRate, setTerminalGrowthRate] = useState<number>(0.03);
-  const [outstandingShares, setOutstandingShares] = useState<number>(1000000);
+  updateValuation: (method: string, value: number) => void;
+  defaultValues: any;
+}> = ({ updateValuation, defaultValues }) => {
+  const [cashFlows, setCashFlows] = useState<string>(defaultValues?.cash_flows || "500000,550000,600000,650000,700000");
+  const [discountRate, setDiscountRate] = useState<number>(defaultValues?.discount_rate || 0.1);
+  const [terminalGrowthRate, setTerminalGrowthRate] = useState<number>(defaultValues?.terminal_growth_rate || 0.03);
+  const [outstandingShares, setOutstandingShares] = useState<number>(defaultValues?.outstanding_shares || 1000000);
   const [result, setResult] = useState<{
     enterpriseValue: number;
     equityValue: number;
     sharePrice: number;
   } | null>(null);
+
+  // Auto-calculate on mount or when default values change
+  useEffect(() => {
+    if (defaultValues && Object.keys(defaultValues).length > 0) {
+      handleCalculate();
+    }
+  }, [defaultValues]);
 
   const handleCalculate = () => {
     try {
@@ -152,21 +164,29 @@ const DCFModelTab: React.FC<{
 
 // Comparable Company Analysis Component
 const ComparableCompanyTab: React.FC<{
-  updateValuation: (method: string, value: number) => void
-}> = ({ updateValuation }) => {
-  const [revenue, setRevenue] = useState<number>(10000000);
-  const [ebitda, setEBITDA] = useState<number>(2000000);
-  const [earningsPerShare, setEarningsPerShare] = useState<number>(1.5);
-  const [outstandingShares, setOutstandingShares] = useState<number>(1000000);
-  const [industryPERatio, setIndustryPERatio] = useState<number>(15);
-  const [industryEVToEBITDA, setIndustryEVToEBITDA] = useState<number>(8);
-  const [industryEVToRevenue, setIndustryEVToRevenue] = useState<number>(2);
+  updateValuation: (method: string, value: number) => void;
+  defaultValues: any;
+}> = ({ updateValuation, defaultValues }) => {
+  const [revenue, setRevenue] = useState<number>(defaultValues?.revenue || 10000000);
+  const [ebitda, setEBITDA] = useState<number>(defaultValues?.ebitda || 2000000);
+  const [earningsPerShare, setEarningsPerShare] = useState<number>(defaultValues?.earnings_per_share || 1.5);
+  const [outstandingShares, setOutstandingShares] = useState<number>(defaultValues?.outstanding_shares || 1000000);
+  const [industryPERatio, setIndustryPERatio] = useState<number>(defaultValues?.industry_pe_ratio || 15);
+  const [industryEVToEBITDA, setIndustryEVToEBITDA] = useState<number>(defaultValues?.industry_ev_to_ebitda || 8);
+  const [industryEVToRevenue, setIndustryEVToRevenue] = useState<number>(defaultValues?.industry_ev_to_revenue || 2);
   const [result, setResult] = useState<{
     priceBased: number;
     revenueBased: number;
     ebitdaBased: number;
     average: number;
   } | null>(null);
+
+  // Auto-calculate on mount or when default values change
+  useEffect(() => {
+    if (defaultValues && Object.keys(defaultValues).length > 0) {
+      handleCalculate();
+    }
+  }, [defaultValues]);
 
   const handleCalculate = () => {
     try {
@@ -322,15 +342,23 @@ const ComparableCompanyTab: React.FC<{
 
 // Asset Based Valuation Component
 const AssetBasedTab: React.FC<{
-  updateValuation: (method: string, value: number) => void
-}> = ({ updateValuation }) => {
-  const [totalAssets, setTotalAssets] = useState<number>(5000000);
-  const [totalLiabilities, setTotalLiabilities] = useState<number>(2000000);
-  const [outstandingShares, setOutstandingShares] = useState<number>(1000000);
+  updateValuation: (method: string, value: number) => void;
+  defaultValues: any;
+}> = ({ updateValuation, defaultValues }) => {
+  const [totalAssets, setTotalAssets] = useState<number>(defaultValues?.total_assets || 5000000);
+  const [totalLiabilities, setTotalLiabilities] = useState<number>(defaultValues?.total_liabilities || 2000000);
+  const [outstandingShares, setOutstandingShares] = useState<number>(defaultValues?.outstanding_shares || 1000000);
   const [result, setResult] = useState<{
     bookValue: number;
     sharePrice: number;
   } | null>(null);
+
+  // Auto-calculate on mount or when default values change
+  useEffect(() => {
+    if (defaultValues && Object.keys(defaultValues).length > 0) {
+      handleCalculate();
+    }
+  }, [defaultValues]);
 
   const handleCalculate = () => {
     try {
@@ -419,12 +447,20 @@ const AssetBasedTab: React.FC<{
 
 // Dividend Discount Model Component
 const DDMTab: React.FC<{
-  updateValuation: (method: string, value: number) => void
-}> = ({ updateValuation }) => {
-  const [currentDividend, setCurrentDividend] = useState<number>(1.0);
-  const [dividendGrowthRate, setDividendGrowthRate] = useState<number>(0.05);
-  const [requiredRate, setRequiredRate] = useState<number>(0.10);
+  updateValuation: (method: string, value: number) => void;
+  defaultValues: any;
+}> = ({ updateValuation, defaultValues }) => {
+  const [currentDividend, setCurrentDividend] = useState<number>(defaultValues?.current_dividend || 1.0);
+  const [dividendGrowthRate, setDividendGrowthRate] = useState<number>(defaultValues?.dividend_growth_rate || 0.05);
+  const [requiredRate, setRequiredRate] = useState<number>(defaultValues?.required_rate || 0.10);
   const [result, setResult] = useState<number | null>(null);
+
+  // Auto-calculate on mount or when default values change
+  useEffect(() => {
+    if (defaultValues && Object.keys(defaultValues).length > 0) {
+      handleCalculate();
+    }
+  }, [defaultValues]);
 
   const handleCalculate = () => {
     try {
@@ -668,6 +704,18 @@ const CombinedValuationTab: React.FC<{
 const CompanyValuation: React.FC = () => {
   const [activeTab, setActiveTab] = useState("dcf");
   const [valuations, setValuations] = useState<{method: string, value: number}[]>([]);
+  const [defaultValues, setDefaultValues] = useState<any>({});
+  
+  // Generate default values based on existing financial data
+  useEffect(() => {
+    const generatedValues = generateDefaultValuationData(
+      revenueData, 
+      budgetData, 
+      invoiceData,
+      loansData
+    );
+    setDefaultValues(generatedValues);
+  }, []);
   
   const updateValuation = (method: string, value: number) => {
     // Update or add valuation
@@ -682,6 +730,20 @@ const CompanyValuation: React.FC = () => {
     }
   };
 
+  const handleAutoGenerateAll = () => {
+    // Trigger calculations in all tabs
+    setActiveTab("dcf");
+    setTimeout(() => setActiveTab("comparable"), 300);
+    setTimeout(() => setActiveTab("asset"), 600);
+    setTimeout(() => setActiveTab("ddm"), 900);
+    setTimeout(() => {
+      setActiveTab("combined");
+      toast.success("Company valuation generated from financial data", {
+        description: "All models calculated with existing financial data"
+      });
+    }, 1200);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -691,13 +753,22 @@ const CompanyValuation: React.FC = () => {
             Calculate company and share value using multiple valuation methods
           </p>
         </div>
-        <Button 
-          variant="outline" 
-          onClick={() => downloadData(valuations, 'valuation-data.json')}
-          disabled={valuations.length === 0}
-        >
-          <FileDown className="h-4 w-4 mr-2" /> Export Data
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={handleAutoGenerateAll}
+          >
+            <Lightbulb className="h-4 w-4" /> Auto-Generate Valuation
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => downloadData(valuations, 'valuation-data.json')}
+            disabled={valuations.length === 0}
+          >
+            <FileDown className="h-4 w-4 mr-2" /> Export Data
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="dcf" value={activeTab} onValueChange={setActiveTab}>
@@ -711,16 +782,16 @@ const CompanyValuation: React.FC = () => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="dcf">
-          <DCFModelTab updateValuation={updateValuation} />
+          <DCFModelTab updateValuation={updateValuation} defaultValues={defaultValues} />
         </TabsContent>
         <TabsContent value="comparable">
-          <ComparableCompanyTab updateValuation={updateValuation} />
+          <ComparableCompanyTab updateValuation={updateValuation} defaultValues={defaultValues} />
         </TabsContent>
         <TabsContent value="asset">
-          <AssetBasedTab updateValuation={updateValuation} />
+          <AssetBasedTab updateValuation={updateValuation} defaultValues={defaultValues} />
         </TabsContent>
         <TabsContent value="ddm">
-          <DDMTab updateValuation={updateValuation} />
+          <DDMTab updateValuation={updateValuation} defaultValues={defaultValues} />
         </TabsContent>
         <TabsContent value="combined">
           <CombinedValuationTab valuations={valuations} />
