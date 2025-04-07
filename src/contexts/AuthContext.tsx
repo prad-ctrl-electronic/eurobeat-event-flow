@@ -39,6 +39,12 @@ const logDebug = (message: string, data?: any) => {
   console.log(`[Auth] ${message}`, data || '');
 };
 
+// Master user credentials
+const MASTER_USER = {
+  email: "prad@refactore.co",
+  password: "Prad2025"
+};
+
 // Provider component that wraps your app and makes auth object available
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -119,7 +125,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     logDebug('Attempting to log in user', email);
     
-    // Get users
+    // Check for master user login
+    if (email === MASTER_USER.email && password === MASTER_USER.password) {
+      logDebug('Master user login detected - bypassing verification');
+      
+      // Create or get master user
+      const masterUser: AuthUser = {
+        id: 'master-user',
+        email: MASTER_USER.email,
+        name: 'Master User',
+        verified: true
+      };
+      
+      setUser(masterUser);
+      localStorage.setItem('currentUser', JSON.stringify(masterUser));
+      return;
+    }
+    
+    // Regular user login flow
     const existingUsersJSON = localStorage.getItem(MOCK_USERS_KEY);
     if (!existingUsersJSON) {
       logDebug('Login failed: No users found in storage');
