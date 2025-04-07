@@ -114,21 +114,6 @@ const LoansTabContent: React.FC<{ invoiceDebts: InvoiceDebt[] }> = ({ invoiceDeb
       setShowDeleteDialog(false);
     }
   };
-  
-  const totalLoansOutstanding = loans.reduce((sum, loan) => sum + loan.outstandingAmount, 0);
-  const totalInvoiceDebts = invoiceDebts.reduce((sum, debt) => {
-    // Simplified conversion to EUR for display
-    let amount = debt.amount;
-    if (debt.currency === "PLN") amount /= 4.3;
-    if (debt.currency === "HUF") amount /= 380;
-    if (debt.currency === "USD") amount *= 0.91;
-    return sum + amount;
-  }, 0);
-  const monthlyDebtService = calculateMonthlyDebtService(loans);
-  
-  const handleLoanAdded = (newLoan: Loan) => {
-    setLoans([...loans, newLoan]);
-  };
 
   return (
     <div className="space-y-6">
