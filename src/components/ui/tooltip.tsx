@@ -26,4 +26,26 @@ const TooltipContent = React.forwardRef<
 ))
 TooltipContent.displayName = TooltipPrimitive.Content.displayName
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+// Add a convenience component for common tooltip usage
+const SimpleTooltip = ({ 
+  content, 
+  children, 
+  side = "top" 
+}: { 
+  content: React.ReactNode;
+  children: React.ReactNode;
+  side?: "top" | "bottom" | "left" | "right";
+}) => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {children}
+      </TooltipTrigger>
+      <TooltipContent side={side}>
+        {content}
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, SimpleTooltip }
