@@ -17,15 +17,57 @@ const BudgetAnalysisHeader: React.FC<BudgetAnalysisHeaderProps> = ({
   const selectedEventName = useSelectedEventName();
 
   const handleExport = () => {
+    // In a real app, this would trigger a file download
+    const budgetData = {
+      event: selectedEventName,
+      exportDate: new Date().toISOString(),
+      exportType: "budget-analysis"
+    };
+    
+    // Convert to JSON and create blob
+    const jsonData = JSON.stringify(budgetData, null, 2);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    
+    // Create download link and trigger click
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${selectedEventName.replace(/\s+/g, '-').toLowerCase()}-budget-analysis.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
     toast.success("Budget data exported successfully");
   };
 
   const handleImport = () => {
-    toast.info("Please select a file to import");
+    // Create a file input element
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json,.csv';
+    
+    // Handle file selection
+    fileInput.onchange = (e) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files && target.files.length > 0) {
+        const file = target.files[0];
+        toast.success(`Importing budget data from ${file.name}`);
+        // In a real app, we would read and parse the file here
+      }
+    };
+    
+    // Trigger file dialog
+    fileInput.click();
   };
 
   const handleGenerateReport = () => {
-    toast.success("Generating comprehensive financial report");
+    // In a real app, this would generate a comprehensive report
+    toast.success(`Generating comprehensive financial report for ${selectedEventName}`);
+    
+    // Simulate report generation delay
+    setTimeout(() => {
+      toast.success("Financial report ready for download");
+    }, 1500);
   };
 
   return (
