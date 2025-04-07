@@ -10,6 +10,7 @@ import BudgetAnalysis from "@/components/finance/BudgetAnalysis";
 import RevenueManager from "@/components/finance/RevenueManager";
 import ExpensesTabContent from "@/components/finance/ExpensesTabContent";
 import MiscTabContent from "@/components/finance/MiscTabContent";
+import CompanyValuation from "@/components/finance/CompanyValuation";
 
 const Finance = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -54,6 +55,7 @@ const Finance = () => {
               <TabsTrigger value="revenues">Revenues</TabsTrigger>
               <TabsTrigger value="invoices">Invoices</TabsTrigger>
               <TabsTrigger value="budgeting">Budgeting</TabsTrigger>
+              <TabsTrigger value="valuation">Company Valuation</TabsTrigger>
               <TabsTrigger value="taxes">Taxes</TabsTrigger>
               <TabsTrigger value="profitloss">Profit & Loss</TabsTrigger>
               <TabsTrigger value="miscellaneous">Miscellaneous</TabsTrigger>
@@ -73,6 +75,10 @@ const Finance = () => {
             
             <TabsContent value="budgeting">
               <BudgetAnalysis />
+            </TabsContent>
+            
+            <TabsContent value="valuation">
+              <CompanyValuation />
             </TabsContent>
             
             <TabsContent value="taxes">

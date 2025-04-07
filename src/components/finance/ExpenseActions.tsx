@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { FileDown, Printer } from "lucide-react";
 
 interface ExpenseActionsProps {
-  onDownloadReport: () => void;
+  onDownloadReport?: () => void;
+  onPrint?: () => void;
 }
 
-const ExpenseActions = ({ onDownloadReport }: ExpenseActionsProps) => {
+const ExpenseActions = ({ onDownloadReport, onPrint }: ExpenseActionsProps) => {
   return (
     <div className="flex space-x-2">
       <Button 
@@ -19,7 +20,12 @@ const ExpenseActions = ({ onDownloadReport }: ExpenseActionsProps) => {
         <FileDown className="h-4 w-4" />
         Export
       </Button>
-      <Button variant="outline" size="sm" className="flex items-center gap-2">
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="flex items-center gap-2"
+        onClick={onPrint}
+      >
         <Printer className="h-4 w-4" />
         Print
       </Button>
