@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { FileText, Download, Printer, ArrowUpDown, Filter } from "lucide-react";
+import { FileText, Download, Printer, ArrowUpDown, Filter, FileExcel } from "lucide-react";
 import { 
   ChartContainer, 
   ChartTooltip,
@@ -18,6 +18,7 @@ import { formatCurrency, getVarianceClass } from "@/components/finance/budget/bu
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 
 // Import sample data
 import { budgetData, revenueData, calculateSummary } from "@/components/finance/budget/budgetData";
@@ -191,6 +192,106 @@ const FinancialReport: React.FC = () => {
     link.click();
     document.body.removeChild(link);
   };
+
+  // New function to download Excel-compatible CSV file
+  const downloadExcelReport = () => {
+    try {
+      // Generate CSV content
+      const csvRows = [];
+      
+      // Add headers
+      csvRows.push(['Financial Report', currentPeriod.label]);
+      csvRows.push([]);
+      
+      // Add summary section
+      csvRows.push(['Financial Summary']);
+      csvRows.push(['Total Revenue', formatCurrency(totalRevenue)]);
+      csvRows.push(['Total Expenses', formatCurrency(totalExpenses)]);
+      csvRows.push(['Net Profit', formatCurrency(netProfit)]);
+      csvRows.push(['Profit Margin', `${profitMargin}%`]);
+      csvRows.push([]);
+      
+      // Add Budget vs Actual section
+      csvRows.push(['Budget vs Actual']);
+      csvRows.push(['Category', 'Planned', 'Actual', 'Variance']);
+      csvRows.push(['Revenue', formatCurrency(summary.totalPlannedRevenue), formatCurrency(summary.totalActualRevenue), formatCurrency(summary.totalRevenueVariance)]);
+      csvRows.push(['Expenses', formatCurrency(summary.totalPlannedCost), formatCurrency(summary.totalActualCost), formatCurrency(summary.totalCostVariance)]);
+      csvRows.push(['Profit', formatCurrency(summary.plannedProfit), formatCurrency(summary.actualProfit), formatCurrency(summary.profitVariance)]);
+      csvRows.push(['Profit Margin', `${summary.profitMarginPlanned}%`, `${summary.profitMarginActual}%`, `${(parseFloat(summary.profitMarginActual) - parseFloat(summary.profitMarginPlanned)).toFixed(2)}%`]);
+      csvRows.push([]);
+      
+      // Add Revenue details
+      csvRows.push(['Revenue Details']);
+      csvRows.push(['Category', 'Description', 'Planned', 'Actual', 'Variance']);
+      revenueData.forEach(item => {
+        csvRows.push([
+          item.category,
+          item.description,
+          formatCurrency(item.planned),
+          formatCurrency(item.actual),
+          formatCurrency(item.variance)
+        ]);
+      });
+      csvRows.push([]);
+      
+      // Add Expense details
+      csvRows.push(['Expense Details']);
+      csvRows.push(['Category', 'Description', 'Planned', 'Actual', 'Variance']);
+      budgetData.forEach(item => {
+        csvRows.push([
+          item.category,
+          item.description,
+          formatCurrency(item.planned),
+          formatCurrency(item.actual),
+          formatCurrency(item.variance)
+        ]);
+      });
+      csvRows.push([]);
+      
+      // Add Invoice details
+      csvRows.push(['Invoices']);
+      csvRows.push(['Supplier', 'Invoice #', 'Issue Date', 'Category', 'Amount', 'Status', 'Comment']);
+      invoiceData.forEach(invoice => {
+        csvRows.push([
+          invoice.supplier,
+          invoice.invoiceNumber,
+          new Date(invoice.issueDate).toLocaleDateString(),
+          invoice.category,
+          `${formatCurrency(invoice.amount)} ${invoice.currency}`,
+          invoice.status,
+          invoice.comment
+        ]);
+      });
+      
+      // Convert to CSV string (with proper escaping for Excel)
+      const csvContent = csvRows.map(row => 
+        row.map(cell => {
+          // Escape quotes and wrap fields with commas in quotes
+          if (cell === null || cell === undefined) return '';
+          const cellStr = String(cell);
+          if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+            return `"${cellStr.replace(/"/g, '""')}"`;
+          }
+          return cellStr;
+        }).join(',')
+      ).join('\n');
+      
+      // Create Blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `financial-report-${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success("Financial report downloaded successfully as Excel-compatible CSV file");
+    } catch (error) {
+      console.error("Error generating Excel report:", error);
+      toast.error("Failed to generate Excel report");
+    }
+  };
   
   const printReport = () => {
     window.print();
@@ -239,9 +340,9 @@ const FinancialReport: React.FC = () => {
             <Printer className="h-4 w-4" />
             Print
           </Button>
-          <Button onClick={downloadReport} size="sm" className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            Download
+          <Button onClick={downloadExcelReport} size="sm" className="flex items-center gap-2">
+            <FileExcel className="h-4 w-4" />
+            Excel
           </Button>
         </div>
       </div>
@@ -574,9 +675,9 @@ const FinancialReport: React.FC = () => {
       </Tabs>
       
       <CardFooter className="pt-6 print:hidden">
-        <Button onClick={downloadReport} className="flex items-center gap-2">
-          <FileText className="h-4 w-4" />
-          Download Complete Financial Report
+        <Button onClick={downloadExcelReport} className="flex items-center gap-2">
+          <FileExcel className="h-4 w-4" />
+          Download Excel Report
         </Button>
       </CardFooter>
     </div>

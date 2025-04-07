@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import ExpenseForm from "./ExpenseForm";
@@ -116,7 +115,9 @@ const ExpensesTabContent = () => {
             <CardDescription>Enter the details of your expense</CardDescription>
           </CardHeader>
           <CardContent>
-            <ExpenseForm onSubmit={() => setShowForm(false)} onCancel={() => setShowForm(false)} />
+            <ExpenseForm 
+              onCancel={() => setShowForm(false)} 
+            />
           </CardContent>
         </Card>
       ) : (
