@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, FileDown, Printer, Plus, ArrowDownRight, BankIcon, ArrowUpRight, FileInput } from "lucide-react";
+import { Search, FileDown, Printer, Plus, ArrowDownRight, Building, ArrowUpRight, FileInput } from "lucide-react";
 import { Loan, InvoiceDebt, loansData, calculateMonthlyDebtService, makeRepayment } from "@/utils/debtUtils";
 import LoanForm from "./LoanForm";
 import ExpenseActions from "./ExpenseActions";
@@ -102,7 +102,7 @@ const LoansTabContent: React.FC<{ invoiceDebts: InvoiceDebt[] }> = ({ invoiceDeb
           <CardHeader className="pb-2">
             <CardDescription>Total Outstanding Loans</CardDescription>
             <CardTitle className="text-2xl flex items-center">
-              <BankIcon className="mr-2 h-5 w-5 text-primary" />
+              <Building className="mr-2 h-5 w-5 text-primary" />
               €{totalLoansOutstanding.toLocaleString()}
             </CardTitle>
           </CardHeader>

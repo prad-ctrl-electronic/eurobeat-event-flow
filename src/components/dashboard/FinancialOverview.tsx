@@ -1,6 +1,6 @@
 
 import React from "react";
-import { ArrowUpRight, ArrowDownRight, EuroIcon, DollarSign, Percent, BankIcon } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, EuroIcon, DollarSign, Percent, Building } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { loansData } from "@/utils/debtUtils";
@@ -39,7 +39,7 @@ const FinancialOverview = () => {
         <CardHeader className="pb-2">
           <CardDescription className="text-muted-foreground">Outstanding Debts</CardDescription>
           <CardTitle className="text-2xl flex items-center">
-            <BankIcon className="mr-2 h-5 w-5 text-secondary-blue" />
+            <Building className="mr-2 h-5 w-5 text-secondary-blue" />
             {outstandingDebt.toLocaleString()}
           </CardTitle>
         </CardHeader>
