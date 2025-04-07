@@ -34,6 +34,11 @@ type StoredUser = {
   verified: boolean;
 };
 
+// Debug helper function
+const logDebug = (message: string, data?: any) => {
+  console.log(`[Auth] ${message}`, data || '');
+};
+
 // Provider component that wraps your app and makes auth object available
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -42,11 +47,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check if we have a stored session on mount
   useEffect(() => {
     const storedUser = localStorage.getItem('currentUser');
+    logDebug('Checking for stored user session', storedUser ? 'Found' : 'None');
+    
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
+        logDebug('User session restored', parsedUser.email);
       } catch (e) {
+        logDebug('Error parsing stored user, clearing session', e);
         localStorage.removeItem('currentUser');
       }
     }
@@ -55,14 +64,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Mock email verification
   const sendVerificationEmail = (email: string, token: string) => {
-    console.log(`Verification email sent to ${email} with token: ${token}`);
+    logDebug(`Verification email sent to ${email} with token: ${token}`);
     // In a real app, this would call an API to send an email
   };
 
   // Sign up a new user
   const signUp = async (email: string, password: string) => {
+    logDebug('Attempting to sign up user', email);
+    
     // Validate email domain
     if (!email.endsWith('@refactore.co')) {
+      logDebug('Sign up failed: Invalid email domain');
       throw new Error('Only refactore.co email addresses are allowed to register');
     }
 
@@ -74,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Check if user already exists
     if (existingUsers.some(u => u.email === email)) {
+      logDebug('Sign up failed: User already exists');
       throw new Error('User with this email already exists');
     }
 
@@ -93,34 +106,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       MOCK_USERS_KEY, 
       JSON.stringify([...existingUsers, newUser])
     );
-
-    // Send verification email
-    sendVerificationEmail(email, verificationToken);
+    logDebug('User created successfully, verification required', email);
 
     // Store verification token
     localStorage.setItem(`verification_${email}`, verificationToken);
-
-    // Don't automatically log in the user - require verification first
+    
+    // Send verification email
+    sendVerificationEmail(email, verificationToken);
   };
 
   // Log in an existing user
   const login = async (email: string, password: string) => {
+    logDebug('Attempting to log in user', email);
+    
     // Get users
     const existingUsersJSON = localStorage.getItem(MOCK_USERS_KEY);
     if (!existingUsersJSON) {
+      logDebug('Login failed: No users found in storage');
       throw new Error('Invalid email or password');
     }
 
     const existingUsers: StoredUser[] = JSON.parse(existingUsersJSON);
+    logDebug(`Found ${existingUsers.length} users in storage`);
+    
     const foundUser = existingUsers.find(
       u => u.email === email && u.password === password
     );
 
     if (!foundUser) {
+      logDebug('Login failed: Invalid credentials');
       throw new Error('Invalid email or password');
     }
 
     if (!foundUser.verified) {
+      logDebug('Login failed: Email not verified', email);
       throw new Error('Please verify your email before logging in');
     }
 
@@ -132,21 +151,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       verified: foundUser.verified
     };
 
+    logDebug('Login successful', email);
     setUser(currentUser);
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
   };
 
   // Log out the current user
   const logout = () => {
+    logDebug('User logged out');
     setUser(null);
     localStorage.removeItem('currentUser');
   };
 
   // Verify email address
   const verifyEmail = async (token: string): Promise<boolean> => {
+    logDebug('Attempting to verify email with token', token);
+    
     // Get all users
     const existingUsersJSON = localStorage.getItem(MOCK_USERS_KEY);
     if (!existingUsersJSON) {
+      logDebug('Verification failed: No users found');
       return false;
     }
 
@@ -166,10 +190,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Clean up the token
         localStorage.removeItem(`verification_${user.email}`);
         
+        logDebug('Email verification successful', user.email);
         return true;
       }
     }
     
+    logDebug('Email verification failed: Invalid token');
     return false;
   };
 

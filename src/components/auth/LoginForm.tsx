@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Define the schema for the form
 const LoginSchema = z.object({
@@ -44,6 +45,8 @@ export function LoginForm() {
       await login(data.email, data.password);
       toast.success("Login successful!");
     } catch (error) {
+      console.error("Login error:", error);
+      
       if (error instanceof Error) {
         toast.error("Login failed", {
           description: error.message,
@@ -126,12 +129,20 @@ export function LoginForm() {
         </form>
       </Form>
       
-      <p className="mt-4 text-sm text-center text-muted-foreground">
-        Don't have an account?{" "}
-        <a href="/signup" className="text-primary hover:underline">
-          Sign up
-        </a>
-      </p>
+      <div className="mt-4 text-sm text-center text-muted-foreground">
+        <p className="mb-1">
+          Don't have an account?{" "}
+          <Link to="/signup" className="text-primary hover:underline">
+            Sign up
+          </Link>
+        </p>
+        <p>
+          Need to verify your email?{" "}
+          <Link to="/verify-email" className="text-primary hover:underline">
+            Verify email
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
