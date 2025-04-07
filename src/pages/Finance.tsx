@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Euro, Plus, FileInput, Calculator } from "lucide-react";
+import { Euro, Plus, FileInput, Calculator, BarChart4 } from "lucide-react";
 import InvoiceTable from "@/components/finance/InvoiceTable";
+import BudgetAnalysis from "@/components/finance/BudgetAnalysis";
 
 const Finance = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -28,6 +29,9 @@ const Finance = () => {
               <Button variant="outline" className="gap-2">
                 <Calculator className="h-4 w-4" /> Tax Calculator
               </Button>
+              <Button variant="outline" className="gap-2">
+                <BarChart4 className="h-4 w-4" /> Budget Report
+              </Button>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" /> Add Expense
               </Button>
@@ -39,6 +43,7 @@ const Finance = () => {
               <TabsTrigger value="expenses">Expenses</TabsTrigger>
               <TabsTrigger value="revenues">Revenues</TabsTrigger>
               <TabsTrigger value="invoices">Invoices</TabsTrigger>
+              <TabsTrigger value="budgeting">Budgeting</TabsTrigger>
               <TabsTrigger value="taxes">Taxes</TabsTrigger>
               <TabsTrigger value="profitloss">Profit & Loss</TabsTrigger>
             </TabsList>
@@ -183,6 +188,18 @@ const Finance = () => {
                 </CardHeader>
                 <CardContent>
                   <InvoiceTable />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="budgeting">
+              <Card className="card-gradient">
+                <CardHeader>
+                  <CardTitle>Event Budget Analysis</CardTitle>
+                  <CardDescription>Track your event budgets, revenues and calculate profit & loss</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <BudgetAnalysis />
                 </CardContent>
               </Card>
             </TabsContent>
