@@ -63,10 +63,8 @@ const RevenueManager: React.FC = () => {
   const [selectedRevenue, setSelectedRevenue] = useState<any>(null);
   const [revenueItems, setRevenueItems] = useState(mockRevenueItems);
 
-  // Function to handle form submission (for new or edited revenue items)
   const handleRevenueSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic to add or update revenue item
     toast.success(
       selectedRevenue ? "Revenue item updated!" : "Revenue item added!"
     );
@@ -74,15 +72,12 @@ const RevenueManager: React.FC = () => {
     setEditRevenueOpen(false);
   };
 
-  // Function to open edit dialog
   const handleEditRevenue = (item: any) => {
     setSelectedRevenue(item);
     setEditRevenueOpen(true);
   };
 
-  // Function to delete revenue item
   const handleDeleteRevenue = (id: string) => {
-    // Logic to delete revenue item
     setRevenueItems(revenueItems.filter((item) => item.id !== id));
     toast.success("Revenue item deleted!");
   };
@@ -177,7 +172,6 @@ const RevenueManager: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* New Revenue Dialog */}
       <Dialog open={newRevenueOpen} onOpenChange={setNewRevenueOpen}>
         <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
@@ -268,7 +262,6 @@ const RevenueManager: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Revenue Dialog */}
       <Dialog open={editRevenueOpen} onOpenChange={setEditRevenueOpen}>
         <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
