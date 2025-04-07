@@ -13,6 +13,17 @@ import MiscTabContent from "@/components/finance/MiscTabContent";
 
 const Finance = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("expenses");
+
+  const handleShowAddExpense = () => {
+    if (activeTab === "expenses") {
+      // Logic to show add expense form within expenses tab
+      return;
+    }
+    
+    // If not on expenses tab, switch to it
+    setActiveTab("expenses");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -31,13 +42,13 @@ const Finance = () => {
               <Button variant="outline" className="gap-2">
                 <BarChart4 className="h-4 w-4" /> Budget Report
               </Button>
-              <Button className="gap-2">
+              <Button className="gap-2" onClick={handleShowAddExpense}>
                 <Plus className="h-4 w-4" /> Add Expense
               </Button>
             </div>
           </div>
           
-          <Tabs defaultValue="expenses" className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="bg-muted/40 mb-4">
               <TabsTrigger value="expenses">Expenses</TabsTrigger>
               <TabsTrigger value="revenues">Revenues</TabsTrigger>
