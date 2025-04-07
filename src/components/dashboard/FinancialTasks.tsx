@@ -1,9 +1,12 @@
 
 import React, { useState } from "react";
-import { AlertCircle, ChevronRight, FileText, Clock, CheckCircle2 } from "lucide-react";
+import { AlertCircle, ChevronRight, FileText, Clock, CheckCircle2, X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ActionButtons } from "@/components/ui/action-buttons";
 import { toast } from "sonner";
 import {
@@ -58,13 +61,36 @@ const FinancialTasks = () => {
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
   const [selectedTask, setSelectedTask] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [editedValues, setEditedValues] = useState<Record<number, FinancialTask>>({});
 
   const handleEdit = (taskId: number) => {
-    setEditingTaskId(taskId);
-    toast.info(`Edit functionality for task ${taskId} will be implemented soon`);
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      setEditedValues({
+        ...editedValues,
+        [taskId]: { ...task }
+      });
+      setEditingTaskId(taskId);
+    }
+  };
+
+  const handleChange = (taskId: number, field: keyof FinancialTask, value: string) => {
+    setEditedValues({
+      ...editedValues,
+      [taskId]: {
+        ...editedValues[taskId],
+        [field]: value
+      }
+    });
   };
 
   const handleSave = (taskId: number) => {
+    // In a real app, this would save to the database
+    // For the demo, update the local state
+    setTasks(tasks.map(task => 
+      task.id === taskId ? editedValues[taskId] : task
+    ));
+    
     toast.success(`Task ${taskId} saved successfully`);
     setEditingTaskId(null);
   };
@@ -79,6 +105,30 @@ const FinancialTasks = () => {
       setTasks(tasks.filter(task => task.id !== selectedTask));
       toast.success(`Task ${selectedTask} deleted successfully`);
       setShowDeleteDialog(false);
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "tax":
+        return <AlertCircle className="h-5 w-5" />;
+      case "invoice":
+        return <FileText className="h-5 w-5" />;
+      case "expense":
+      default:
+        return <CheckCircle2 className="h-5 w-5" />;
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "tax":
+        return "bg-amber-500/20 text-amber-500";
+      case "invoice":
+        return "bg-blue-500/20 text-blue-500";
+      case "expense":
+      default:
+        return "bg-emerald-500/20 text-emerald-500";
     }
   };
 
@@ -98,33 +148,80 @@ const FinancialTasks = () => {
       <CardContent className="space-y-4">
         {tasks.map((task) => (
           <div key={task.id} className="flex justify-between items-start border border-white/10 rounded-lg p-4 bg-muted/20">
-            <div className="flex gap-3">
-              {task.category === "tax" && (
-                <div className="h-10 w-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500">
-                  <AlertCircle className="h-5 w-5" />
-                </div>
-              )}
-              {task.category === "invoice" && (
-                <div className="h-10 w-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500">
-                  <FileText className="h-5 w-5" />
-                </div>
-              )}
-              {task.category === "expense" && (
-                <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500">
-                  <CheckCircle2 className="h-5 w-5" />
-                </div>
-              )}
-              <div>
-                <h3 className="font-medium">{task.title}</h3>
-                <p className="text-sm text-muted-foreground">{task.description}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
-                    Due {new Date(task.deadline).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
-                  </span>
+            {editingTaskId === task.id ? (
+              <div className="flex-1 space-y-2">
+                <Input 
+                  value={editedValues[task.id]?.title || task.title}
+                  onChange={(e) => handleChange(task.id, 'title', e.target.value)}
+                  placeholder="Task title"
+                  className="font-medium"
+                />
+                <Textarea
+                  value={editedValues[task.id]?.description || task.description}
+                  onChange={(e) => handleChange(task.id, 'description', e.target.value)}
+                  placeholder="Description"
+                  rows={2}
+                />
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="text-xs text-muted-foreground mb-1 block">Due Date</label>
+                    <Input 
+                      type="date"
+                      value={editedValues[task.id]?.deadline || task.deadline}
+                      onChange={(e) => handleChange(task.id, 'deadline', e.target.value)}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs text-muted-foreground mb-1 block">Category</label>
+                    <Select
+                      value={editedValues[task.id]?.category || task.category}
+                      onValueChange={(value) => handleChange(task.id, 'category', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="tax">Tax</SelectItem>
+                        <SelectItem value="invoice">Invoice</SelectItem>
+                        <SelectItem value="expense">Expense</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs text-muted-foreground mb-1 block">Priority</label>
+                    <Select
+                      value={editedValues[task.id]?.priority || task.priority}
+                      onValueChange={(value) => handleChange(task.id, 'priority', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex gap-3">
+                <div className={`h-10 w-10 rounded-full ${getCategoryColor(task.category)} flex items-center justify-center`}>
+                  {getCategoryIcon(task.category)}
+                </div>
+                <div>
+                  <h3 className="font-medium">{task.title}</h3>
+                  <p className="text-sm text-muted-foreground">{task.description}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">
+                      Due {new Date(task.deadline).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <ActionButtons
                 onEdit={() => handleEdit(task.id)}
@@ -132,9 +229,16 @@ const FinancialTasks = () => {
                 onDelete={() => handleDelete(task.id)}
                 isEditing={editingTaskId === task.id}
               />
-              <Button variant="ghost" size="icon">
-                <ChevronRight className="h-5 w-5" />
-              </Button>
+              {!editingTaskId && (
+                <Button variant="ghost" size="icon">
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              )}
+              {editingTaskId === task.id && (
+                <Button variant="ghost" size="icon" onClick={() => setEditingTaskId(null)}>
+                  <X className="h-5 w-5" />
+                </Button>
+              )}
             </div>
           </div>
         ))}

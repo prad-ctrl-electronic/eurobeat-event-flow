@@ -1,6 +1,4 @@
 
-// In the InvoiceTable component, we'll add editing capability with save functionality
-
 import React, { useState } from "react";
 import {
   Table,
@@ -163,6 +161,28 @@ export const invoiceData = [
   }
 ];
 
+interface Invoice {
+  code: string;
+  supplier: string;
+  invoiceNumber: string;
+  taxNumber: string;
+  vatId: string;
+  bankAccount: string;
+  bicSwift: string;
+  operation: string;
+  issueDate: string;
+  dueDate: string;
+  amountNet: string;
+  vat: string;
+  amountGross: string;
+  currency: string;
+  exchangeRate: string;
+  amountPLN: string;
+  status: string;
+  paymentDate: string;
+  comment: string;
+}
+
 const InvoiceTable: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState(invoiceData);
@@ -170,7 +190,7 @@ const InvoiceTable: React.FC = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editedValues, setEditedValues] = useState<Record<string, any>>({});
+  const [editedValues, setEditedValues] = useState<Record<number, Invoice>>({});
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase();
@@ -209,12 +229,28 @@ const InvoiceTable: React.FC = () => {
       ...editedValues,
       [index]: { ...filteredData[index] }
     });
-    toast.info(`Edit mode enabled for invoice ${filteredData[index].invoiceNumber}`);
+    toast.info(`Editing invoice ${filteredData[index].invoiceNumber}`);
+  };
+
+  const handleChange = (index: number, field: keyof Invoice, value: string) => {
+    setEditedValues({
+      ...editedValues,
+      [index]: {
+        ...editedValues[index],
+        [field]: value
+      }
+    });
   };
 
   const handleSave = (index: number) => {
-    // In a real app, this would save to the database
+    // In a real app, this would save to a database
     toast.success(`Changes to invoice ${filteredData[index].invoiceNumber} saved successfully`);
+    
+    // Update the local data (in a real app this would be handled by the backend)
+    const updatedData = [...filteredData];
+    updatedData[index] = editedValues[index];
+    setFilteredData(updatedData);
+    
     setEditingIndex(null);
   };
 
@@ -225,9 +261,13 @@ const InvoiceTable: React.FC = () => {
 
   const confirmDelete = () => {
     if (selectedInvoice !== null) {
+      // In a real app, you would delete from database
+      // For the demo, let's remove it from the local array
+      const updatedData = filteredData.filter((_, idx) => idx !== selectedInvoice);
+      setFilteredData(updatedData);
+      
       toast.success(`Invoice ${filteredData[selectedInvoice].invoiceNumber} deleted successfully`);
       setShowDeleteDialog(false);
-      // In a real application, you would remove the item from the data source here
     }
   };
 
@@ -294,38 +334,135 @@ const InvoiceTable: React.FC = () => {
             {filteredData.length > 0 ? (
               filteredData.map((invoice, index) => (
                 <TableRow key={index} className="hover:bg-muted/60">
-                  <TableCell className="font-medium">{invoice.code}</TableCell>
-                  <TableCell>{invoice.supplier}</TableCell>
-                  <TableCell>{invoice.invoiceNumber}</TableCell>
-                  <TableCell>{invoice.issueDate}</TableCell>
-                  <TableCell>{invoice.dueDate}</TableCell>
-                  <TableCell className="text-right">{invoice.amountGross}</TableCell>
-                  <TableCell>{invoice.currency}</TableCell>
-                  <TableCell className="text-right">{invoice.amountPLN}</TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                      {invoice.status}
-                    </span>
+                  <TableCell className="font-medium">
+                    {editingIndex === index ? (
+                      <Input 
+                        value={editedValues[index]?.code || invoice.code} 
+                        onChange={(e) => handleChange(index, 'code', e.target.value)}
+                      />
+                    ) : (
+                      invoice.code
+                    )}
                   </TableCell>
-                  <TableCell>{invoice.paymentDate}</TableCell>
+                  <TableCell>
+                    {editingIndex === index ? (
+                      <Input 
+                        value={editedValues[index]?.supplier || invoice.supplier} 
+                        onChange={(e) => handleChange(index, 'supplier', e.target.value)}
+                      />
+                    ) : (
+                      invoice.supplier
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingIndex === index ? (
+                      <Input 
+                        value={editedValues[index]?.invoiceNumber || invoice.invoiceNumber} 
+                        onChange={(e) => handleChange(index, 'invoiceNumber', e.target.value)}
+                      />
+                    ) : (
+                      invoice.invoiceNumber
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingIndex === index ? (
+                      <Input 
+                        value={editedValues[index]?.issueDate || invoice.issueDate} 
+                        onChange={(e) => handleChange(index, 'issueDate', e.target.value)}
+                      />
+                    ) : (
+                      invoice.issueDate
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingIndex === index ? (
+                      <Input 
+                        value={editedValues[index]?.dueDate || invoice.dueDate} 
+                        onChange={(e) => handleChange(index, 'dueDate', e.target.value)}
+                      />
+                    ) : (
+                      invoice.dueDate
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {editingIndex === index ? (
+                      <Input 
+                        value={editedValues[index]?.amountGross || invoice.amountGross} 
+                        onChange={(e) => handleChange(index, 'amountGross', e.target.value)}
+                        className="text-right"
+                      />
+                    ) : (
+                      invoice.amountGross
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingIndex === index ? (
+                      <Input 
+                        value={editedValues[index]?.currency || invoice.currency} 
+                        onChange={(e) => handleChange(index, 'currency', e.target.value)}
+                      />
+                    ) : (
+                      invoice.currency
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {editingIndex === index ? (
+                      <Input 
+                        value={editedValues[index]?.amountPLN || invoice.amountPLN} 
+                        onChange={(e) => handleChange(index, 'amountPLN', e.target.value)}
+                        className="text-right"
+                      />
+                    ) : (
+                      invoice.amountPLN
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingIndex === index ? (
+                      <Input 
+                        value={editedValues[index]?.status || invoice.status} 
+                        onChange={(e) => handleChange(index, 'status', e.target.value)}
+                      />
+                    ) : (
+                      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                        {invoice.status}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editingIndex === index ? (
+                      <Input 
+                        value={editedValues[index]?.paymentDate || invoice.paymentDate} 
+                        onChange={(e) => handleChange(index, 'paymentDate', e.target.value)}
+                      />
+                    ) : (
+                      invoice.paymentDate
+                    )}
+                  </TableCell>
                   {showComments && (
                     <TableCell>
-                      {invoice.comment ? (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="flex items-center gap-1 cursor-pointer">
-                                <Info className="h-4 w-4" />
-                                <span className="truncate max-w-[100px]">{invoice.comment}</span>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="max-w-[300px]">{invoice.comment}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                      {editingIndex === index ? (
+                        <Input 
+                          value={editedValues[index]?.comment || invoice.comment} 
+                          onChange={(e) => handleChange(index, 'comment', e.target.value)}
+                        />
                       ) : (
-                        <span className="text-muted-foreground">No comment</span>
+                        invoice.comment ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center gap-1 cursor-pointer">
+                                  <Info className="h-4 w-4" />
+                                  <span className="truncate max-w-[100px]">{invoice.comment}</span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="max-w-[300px]">{invoice.comment}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <span className="text-muted-foreground">No comment</span>
+                        )
                       )}
                     </TableCell>
                   )}

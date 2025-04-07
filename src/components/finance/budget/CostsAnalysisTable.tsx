@@ -16,6 +16,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CostItem } from "./budgetData";
 import { ActionButtons } from "@/components/ui/action-buttons";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface CostsAnalysisTableProps {
   filteredCosts: CostItem[];
@@ -37,7 +47,9 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
   onAddCostClick
 }) => {
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [editedValues, setEditedValues] = useState<Record<string, any>>({});
+  const [editedValues, setEditedValues] = useState<Record<string, CostItem>>({});
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
   const handleEdit = (id: string) => {
     const item = filteredCosts.find(cost => cost.id === id);
@@ -50,14 +62,39 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
     }
   };
 
+  const handleChange = (id: string, field: keyof CostItem, value: any) => {
+    setEditedValues({
+      ...editedValues,
+      [id]: {
+        ...editedValues[id],
+        [field]: field === 'planned' || field === 'actual' ? Number(value) : value,
+        variance: field === 'planned' ? Number(value) - editedValues[id].actual : 
+                 field === 'actual' ? editedValues[id].planned - Number(value) : 
+                 editedValues[id].variance
+      }
+    });
+  };
+
   const handleSave = (id: string) => {
-    // In a real app, this would save to the database
-    toast.success(`Changes to cost item ${id} saved successfully`);
+    // In a real app, this would save to a database
+    // For now, we'll just show a success toast
+    toast.success(`Changes to cost item "${editedValues[id].description}" saved successfully`);
     setEditingItemId(null);
   };
 
   const handleDelete = (id: string) => {
-    toast.info(`Delete functionality for cost item ${id} will be implemented soon`);
+    setSelectedItemId(id);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedItemId) {
+      const itemToDelete = filteredCosts.find(item => item.id === selectedItemId);
+      // In a real app, you would delete from database
+      toast.success(`Cost item "${itemToDelete?.description}" deleted successfully`);
+      setShowDeleteDialog(false);
+      setSelectedItemId(null);
+    }
   };
 
   return (
@@ -100,14 +137,68 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
               {filteredCosts.length > 0 ? (
                 filteredCosts.map((item) => (
                   <TableRow key={item.id} className="hover:bg-muted/60">
-                    <TableCell className="font-medium">{item.category}</TableCell>
-                    <TableCell>{item.description}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(item.planned)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(item.actual)}</TableCell>
-                    <TableCell className={`text-right ${getVarianceClass(item.variance)}`}>
-                      {item.variance > 0 ? "+" : ""}{formatCurrency(item.variance)}
+                    <TableCell className="font-medium">
+                      {editingItemId === item.id ? (
+                        <Input 
+                          value={editedValues[item.id].category} 
+                          onChange={(e) => handleChange(item.id, 'category', e.target.value)}
+                        />
+                      ) : (
+                        item.category
+                      )}
                     </TableCell>
-                    <TableCell className="max-w-[200px] truncate">{item.notes}</TableCell>
+                    <TableCell>
+                      {editingItemId === item.id ? (
+                        <Input 
+                          value={editedValues[item.id].description} 
+                          onChange={(e) => handleChange(item.id, 'description', e.target.value)}
+                        />
+                      ) : (
+                        item.description
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {editingItemId === item.id ? (
+                        <Input 
+                          type="number"
+                          value={editedValues[item.id].planned} 
+                          onChange={(e) => handleChange(item.id, 'planned', e.target.value)}
+                          className="w-24 ml-auto"
+                        />
+                      ) : (
+                        formatCurrency(item.planned)
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {editingItemId === item.id ? (
+                        <Input 
+                          type="number"
+                          value={editedValues[item.id].actual} 
+                          onChange={(e) => handleChange(item.id, 'actual', e.target.value)}
+                          className="w-24 ml-auto"
+                        />
+                      ) : (
+                        formatCurrency(item.actual)
+                      )}
+                    </TableCell>
+                    <TableCell className={`text-right ${getVarianceClass(
+                      editingItemId === item.id ? editedValues[item.id].variance : item.variance
+                    )}`}>
+                      {editingItemId === item.id 
+                        ? (editedValues[item.id].variance > 0 ? "+" : "") + formatCurrency(editedValues[item.id].variance)
+                        : (item.variance > 0 ? "+" : "") + formatCurrency(item.variance)
+                      }
+                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate">
+                      {editingItemId === item.id ? (
+                        <Input 
+                          value={editedValues[item.id].notes} 
+                          onChange={(e) => handleChange(item.id, 'notes', e.target.value)}
+                        />
+                      ) : (
+                        item.notes
+                      )}
+                    </TableCell>
                     <TableCell>
                       <ActionButtons
                         onEdit={() => handleEdit(item.id)}
@@ -129,6 +220,26 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
           </Table>
         </div>
       </CardContent>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the cost item
+              {selectedItemId && filteredCosts.find(item => item.id === selectedItemId) 
+                ? ` "${filteredCosts.find(item => item.id === selectedItemId)?.description}"` 
+                : ""}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

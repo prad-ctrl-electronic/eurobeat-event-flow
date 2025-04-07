@@ -15,6 +15,7 @@ interface ActionButtonsProps {
   onSave?: () => void;
   size?: "default" | "sm" | "lg" | "icon";
   isEditing?: boolean;
+  disabled?: boolean;
 }
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -23,6 +24,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onSave,
   size = "sm",
   isEditing = false,
+  disabled = false,
 }) => {
   return (
     <div className="flex items-center gap-2">
@@ -35,6 +37,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
                 variant="ghost"
                 size={size}
                 className="h-8 w-8 p-0"
+                disabled={disabled}
               >
                 <Pencil className="h-4 w-4 text-muted-foreground hover:text-primary" />
                 <span className="sr-only">Edit</span>
@@ -56,6 +59,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
                 variant="ghost"
                 size={size}
                 className="h-8 w-8 p-0"
+                disabled={disabled}
               >
                 <Save className="h-4 w-4 text-muted-foreground hover:text-green-500" />
                 <span className="sr-only">Save</span>
@@ -77,6 +81,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
                 variant="ghost"
                 size={size}
                 className="h-8 w-8 p-0"
+                disabled={disabled}
               >
                 <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                 <span className="sr-only">Delete</span>
