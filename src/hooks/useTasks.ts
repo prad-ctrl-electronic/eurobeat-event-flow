@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Task, TaskStatus } from '@/types/task';
 import { useToast } from '@/hooks/use-toast';
+import { v4 as uuidv4 } from 'uuid';
 
 // Mock initial data
 const initialTasks: Task[] = [
@@ -56,6 +57,97 @@ const initialTasks: Task[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     tags: ['bugfix', 'mobile', 'responsive']
+  },
+  {
+    id: '5',
+    title: 'Confirm venue booking',
+    description: 'Contact venue manager to confirm date and requirements',
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending',
+    priority: 'high',
+    assignedTo: 'Lisa Wong',
+    project: 'Techno Fusion',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    tags: ['event', 'logistics']
+  },
+  {
+    id: '6',
+    title: 'Finalize artist lineup',
+    description: 'Confirm all artist contracts and travel arrangements',
+    dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'draft',
+    priority: 'medium',
+    assignedTo: 'David Smith',
+    project: 'Techno Fusion',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    tags: ['booking', 'artists']
+  },
+  {
+    id: '7',
+    title: 'Order sound equipment',
+    description: 'Rent additional speakers and mixers for the main stage',
+    dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending',
+    priority: 'medium',
+    assignedTo: 'Mike Johnson',
+    project: 'Techno Fusion',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    tags: ['equipment', 'audio']
+  },
+  {
+    id: '8',
+    title: 'Review marketing campaign',
+    description: 'Analyze performance of social media ads and adjust strategy',
+    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'completed',
+    priority: 'low',
+    assignedTo: 'Sarah Chen',
+    project: 'Marketing',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    tags: ['marketing', 'analytics']
+  },
+  {
+    id: '9',
+    title: 'Update website event calendar',
+    description: 'Add all upcoming events to the public calendar with ticket links',
+    dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending',
+    priority: 'medium',
+    assignedTo: 'Alex Torres',
+    project: 'Website',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    tags: ['web', 'content']
+  },
+  {
+    id: '10',
+    title: 'Submit permit applications',
+    description: 'Complete and submit all required city permits for the festival',
+    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'draft',
+    priority: 'high',
+    assignedTo: 'Lisa Wong',
+    project: 'Burn Warsaw',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    tags: ['legal', 'permits']
+  },
+  {
+    id: '11',
+    title: 'Coordinate security team',
+    description: 'Finalize security staff schedule and emergency procedures',
+    dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending',
+    priority: 'high',
+    assignedTo: 'David Smith',
+    project: 'Burn Warsaw',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    tags: ['security', 'staff']
   }
 ];
 
@@ -92,8 +184,16 @@ export const useTasks = () => {
   }, [toast]);
 
   const addTask = (newTask: Task) => {
+    // Ensure the task has an ID
+    const taskWithId = {
+      ...newTask,
+      id: newTask.id || uuidv4(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
     setTasks(prevTasks => {
-      const updatedTasks = [...prevTasks, newTask];
+      const updatedTasks = [...prevTasks, taskWithId];
       localStorage.setItem('tasks', JSON.stringify(updatedTasks));
       return updatedTasks;
     });
@@ -107,7 +207,7 @@ export const useTasks = () => {
   const updateTask = (updatedTask: Task) => {
     setTasks(prevTasks => {
       const updatedTasks = prevTasks.map(task => 
-        task.id === updatedTask.id ? updatedTask : task
+        task.id === updatedTask.id ? {...updatedTask, updatedAt: new Date().toISOString()} : task
       );
       localStorage.setItem('tasks', JSON.stringify(updatedTasks));
       return updatedTasks;

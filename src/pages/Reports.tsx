@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Calendar, ChartBar, Download, FileText, Printer } from "lucide-react";
+import TaskReport from "@/components/reports/TaskReport";
 
 const Reports = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -23,7 +24,7 @@ const Reports = () => {
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="gap-2">
                 <Download className="h-4 w-4" />
-                Export
+                Export All
               </Button>
               <Button variant="outline" size="sm" className="gap-2">
                 <Printer className="h-4 w-4" />
@@ -32,12 +33,17 @@ const Reports = () => {
             </div>
           </div>
 
-          <Tabs defaultValue="financial" className="space-y-4">
+          <Tabs defaultValue="tasks" className="space-y-4">
             <TabsList>
+              <TabsTrigger value="tasks">Task Reports</TabsTrigger>
               <TabsTrigger value="financial">Financial Reports</TabsTrigger>
               <TabsTrigger value="events">Event Reports</TabsTrigger>
               <TabsTrigger value="sales">Sales Reports</TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="tasks" className="space-y-4">
+              <TaskReport />
+            </TabsContent>
             
             <TabsContent value="financial" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
