@@ -1,685 +1,180 @@
 
-import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { FileText, Download, Printer, ArrowUpDown, Filter } from "lucide-react";
-import { 
-  ChartContainer, 
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent
-} from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { formatCurrency, getVarianceClass } from "@/components/finance/budget/budgetData";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
+import React from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { calculateSummary, costsData, revenueData } from "@/components/finance/budget/budgetData";
+import { formatCurrency } from "@/components/finance/budget/budgetCalculations";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { useEvent } from "@/contexts/EventContext";
 
-// Import sample data
-import { budgetData, revenueData, calculateSummary } from "@/components/finance/budget/budgetData";
-
-// Sample invoice data from CSV
-const invoiceData = [
-  {
-    id: "INV-001",
-    supplier: "Project C AB",
-    invoiceNumber: "PCA/I24-000164",
-    issueDate: "2024-10-11",
-    dueDate: "2024-10-18",
-    amount: 600,
-    currency: "EUR",
-    status: "Paid",
-    category: "Teletech",
-    comment: "Booking fee for the artist Nur Jaber"
-  },
-  {
-    id: "INV-002",
-    supplier: "Sometimescreative GmbH",
-    invoiceNumber: "RE2024015",
-    issueDate: "2024-11-01",
-    dueDate: "2024-11-15",
-    amount: 5000,
-    currency: "EUR",
-    status: "Paid",
-    category: "Teletech",
-    comment: "Digital marketing"
-  },
-  {
-    id: "INV-003",
-    supplier: "DAREKRADIO Dariusz Przepióra",
-    invoiceNumber: "953/10/2024",
-    issueDate: "2024-10-22",
-    dueDate: "2024-10-31",
-    amount: 1402.20,
-    currency: "PLN",
-    status: "Paid",
-    category: "Burn Warsaw",
-    comment: "Radio"
-  },
-  {
-    id: "INV-004",
-    supplier: "Luke Slater Productions Ltd.",
-    invoiceNumber: "LSP-2024850",
-    issueDate: "2024-11-08",
-    dueDate: "2024-11-08",
-    amount: 6500,
-    currency: "EUR",
-    status: "Paid",
-    category: "Boiler room Warsaw",
-    comment: "Artists payment"
-  }
-];
-
-// Process data for charts
-const processExpensesByCategory = () => {
-  const categoryMap: Record<string, number> = {};
-  
-  budgetData.forEach(item => {
-    if (!categoryMap[item.category]) {
-      categoryMap[item.category] = 0;
-    }
-    categoryMap[item.category] += item.actual;
-  });
-  
-  return Object.entries(categoryMap).map(([name, value]) => ({ name, value }));
-};
-
-const processRevenueBySources = () => {
-  const sourceMap: Record<string, number> = {};
-  
-  revenueData.forEach(item => {
-    if (!sourceMap[item.category]) {
-      sourceMap[item.category] = 0;
-    }
-    sourceMap[item.category] += item.actual;
-  });
-  
-  return Object.entries(sourceMap).map(([name, value]) => ({ name, value }));
-};
-
-const processInvoicesByCategory = () => {
-  const categoryMap: Record<string, number> = {};
-  
-  invoiceData.forEach(item => {
-    if (!categoryMap[item.category]) {
-      categoryMap[item.category] = 0;
-    }
-    // Convert to EUR for consistency
-    const amount = item.currency === "PLN" ? item.amount / 4.35 : item.amount;
-    categoryMap[item.category] += amount;
-  });
-  
-  return Object.entries(categoryMap).map(([name, value]) => ({ name, value }));
-};
-
-// Current time period data
-const currentPeriod = {
-  start: "2024-10-01",
-  end: "2024-11-30",
-  label: "Oct-Nov 2024"
-};
-
-// Colors for charts
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+interface CategoryTotals {
+  category: string;
+  plannedCost: number;
+  actualCost: number;
+  plannedRevenue: number;
+  actualRevenue: number;
+}
 
 const FinancialReport: React.FC = () => {
-  const [selectedReport, setSelectedReport] = useState("summary");
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  
-  const summary = calculateSummary();
-  const expensesByCategory = processExpensesByCategory();
-  const revenueBySource = processRevenueBySources();
-  const invoicesByCategory = processInvoicesByCategory();
-  
-  // Calculate KPIs
-  const totalRevenue = summary.totalActualRevenue;
-  const totalExpenses = summary.totalActualCost;
-  const netProfit = summary.actualProfit;
-  const profitMargin = parseFloat(summary.profitMarginActual);
-  
-  const downloadReport = () => {
-    // Compile all financial data
-    const reportData = {
-      reportTitle: "Comprehensive Financial Report",
-      generatedDate: new Date().toISOString(),
-      period: currentPeriod,
-      summary: {
-        totalRevenue,
-        totalExpenses,
-        netProfit,
-        profitMargin
-      },
-      budgetComparison: {
-        revenue: {
-          planned: summary.totalPlannedRevenue,
-          actual: summary.totalActualRevenue,
-          variance: summary.totalRevenueVariance
-        },
-        expenses: {
-          planned: summary.totalPlannedCost,
-          actual: summary.totalActualCost,
-          variance: summary.totalCostVariance
-        },
-        profit: {
-          planned: summary.plannedProfit,
-          actual: summary.actualProfit,
-          variance: summary.profitVariance
-        }
-      },
-      detailedBudget: {
-        expenses: budgetData,
-        revenue: revenueData
-      },
-      invoices: invoiceData
-    };
-    
-    // Convert to JSON
-    const jsonString = JSON.stringify(reportData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    
-    // Create download link
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `financial-report-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const { selectedEventId, events } = useEvent();
+
+  const filteredCosts = selectedEventId === "all" 
+    ? costsData 
+    : costsData.filter(cost => cost.event === selectedEventId);
+
+  const filteredRevenues = selectedEventId === "all" 
+    ? revenueData 
+    : revenueData.filter(revenue => revenue.event === selectedEventId);
+
+  // Calculate summary
+  const summary = calculateSummary(filteredCosts, filteredRevenues);
+
+  // Calculate category totals for visualization
+  const getCategoryData = (): CategoryTotals[] => {
+    const categories = new Set([
+      ...filteredCosts.map(cost => cost.category),
+      ...filteredRevenues.map(revenue => revenue.category)
+    ]);
+
+    return Array.from(categories).map(category => {
+      const categoryCosts = filteredCosts.filter(cost => cost.category === category);
+      const categoryRevenues = filteredRevenues.filter(revenue => revenue.category === category);
+
+      const plannedCost = categoryCosts.reduce((sum, cost) => sum + cost.planned, 0);
+      const actualCost = categoryCosts.reduce((sum, cost) => sum + cost.actual, 0);
+      const plannedRevenue = categoryRevenues.reduce((sum, revenue) => sum + revenue.planned, 0);
+      const actualRevenue = categoryRevenues.reduce((sum, revenue) => sum + revenue.actual, 0);
+
+      return {
+        category,
+        plannedCost,
+        actualCost,
+        plannedRevenue,
+        actualRevenue
+      };
+    });
   };
 
-  // New function to download Excel-compatible CSV file
-  const downloadExcelReport = () => {
-    try {
-      // Generate CSV content
-      const csvRows = [];
-      
-      // Add headers
-      csvRows.push(['Financial Report', currentPeriod.label]);
-      csvRows.push([]);
-      
-      // Add summary section
-      csvRows.push(['Financial Summary']);
-      csvRows.push(['Total Revenue', formatCurrency(totalRevenue)]);
-      csvRows.push(['Total Expenses', formatCurrency(totalExpenses)]);
-      csvRows.push(['Net Profit', formatCurrency(netProfit)]);
-      csvRows.push(['Profit Margin', `${profitMargin}%`]);
-      csvRows.push([]);
-      
-      // Add Budget vs Actual section
-      csvRows.push(['Budget vs Actual']);
-      csvRows.push(['Category', 'Planned', 'Actual', 'Variance']);
-      csvRows.push(['Revenue', formatCurrency(summary.totalPlannedRevenue), formatCurrency(summary.totalActualRevenue), formatCurrency(summary.totalRevenueVariance)]);
-      csvRows.push(['Expenses', formatCurrency(summary.totalPlannedCost), formatCurrency(summary.totalActualCost), formatCurrency(summary.totalCostVariance)]);
-      csvRows.push(['Profit', formatCurrency(summary.plannedProfit), formatCurrency(summary.actualProfit), formatCurrency(summary.profitVariance)]);
-      csvRows.push(['Profit Margin', `${summary.profitMarginPlanned}%`, `${summary.profitMarginActual}%`, `${(parseFloat(summary.profitMarginActual) - parseFloat(summary.profitMarginPlanned)).toFixed(2)}%`]);
-      csvRows.push([]);
-      
-      // Add Revenue details
-      csvRows.push(['Revenue Details']);
-      csvRows.push(['Category', 'Description', 'Planned', 'Actual', 'Variance']);
-      revenueData.forEach(item => {
-        csvRows.push([
-          item.category,
-          item.description,
-          formatCurrency(item.planned),
-          formatCurrency(item.actual),
-          formatCurrency(item.variance)
-        ]);
-      });
-      csvRows.push([]);
-      
-      // Add Expense details
-      csvRows.push(['Expense Details']);
-      csvRows.push(['Category', 'Description', 'Planned', 'Actual', 'Variance']);
-      budgetData.forEach(item => {
-        csvRows.push([
-          item.category,
-          item.description,
-          formatCurrency(item.planned),
-          formatCurrency(item.actual),
-          formatCurrency(item.variance)
-        ]);
-      });
-      csvRows.push([]);
-      
-      // Add Invoice details
-      csvRows.push(['Invoices']);
-      csvRows.push(['Supplier', 'Invoice #', 'Issue Date', 'Category', 'Amount', 'Status', 'Comment']);
-      invoiceData.forEach(invoice => {
-        csvRows.push([
-          invoice.supplier,
-          invoice.invoiceNumber,
-          new Date(invoice.issueDate).toLocaleDateString(),
-          invoice.category,
-          `${formatCurrency(invoice.amount)} ${invoice.currency}`,
-          invoice.status,
-          invoice.comment
-        ]);
-      });
-      
-      // Convert to CSV string (with proper escaping for Excel)
-      const csvContent = csvRows.map(row => 
-        row.map(cell => {
-          // Escape quotes and wrap fields with commas in quotes
-          if (cell === null || cell === undefined) return '';
-          const cellStr = String(cell);
-          if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
-            return `"${cellStr.replace(/"/g, '""')}"`;
-          }
-          return cellStr;
-        }).join(',')
-      ).join('\n');
-      
-      // Create Blob and download
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `financial-report-${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast.success("Financial report downloaded successfully as Excel-compatible CSV file");
-    } catch (error) {
-      console.error("Error generating Excel report:", error);
-      toast.error("Failed to generate Excel report");
-    }
-  };
-  
-  const printReport = () => {
-    window.print();
-  };
-  
+  const categoryData = getCategoryData();
+
   return (
-    <div className="space-y-6 print:space-y-2">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Financial Report</h2>
-          <p className="text-muted-foreground">Period: {currentPeriod.label}</p>
-        </div>
-        <div className="flex gap-2 print:hidden">
-          <Popover open={showFilters} onOpenChange={setShowFilters}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
-                <Filter className="h-4 w-4" />
-                Filters
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="space-y-4">
-                <h4 className="font-medium">Filter Categories</h4>
-                <div className="grid gap-2">
-                  {['Venue', 'Technical', 'Artists', 'Marketing', 'Staff', 'Permits', 'Miscellaneous'].map((category) => (
-                    <div key={category} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`category-${category}`} 
-                        checked={selectedCategories.includes(category)}
-                        onCheckedChange={(checked) => {
-                          setSelectedCategories(
-                            checked 
-                              ? [...selectedCategories, category]
-                              : selectedCategories.filter(c => c !== category)
-                          );
-                        }}
-                      />
-                      <Label htmlFor={`category-${category}`}>{category}</Label>
-                    </div>
-                  ))}
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Financial Report</CardTitle>
+          <CardDescription>
+            Financial summary for {selectedEventId === "all" 
+              ? "all events" 
+              : events.find(e => e.id === selectedEventId)?.name || "unknown event"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold">{formatCurrency(summary.totalRevenue)}</div>
+                <p className="text-xs text-muted-foreground">Total Revenue</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold">{formatCurrency(summary.totalCost)}</div>
+                <p className="text-xs text-muted-foreground">Total Cost</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className={`text-2xl font-bold ${summary.profit < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                  {formatCurrency(summary.profit)}
                 </div>
+                <p className="text-xs text-muted-foreground">Profit/Loss</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Tabs defaultValue="bar-chart">
+            <TabsList className="mb-4">
+              <TabsTrigger value="bar-chart">Category Breakdown</TabsTrigger>
+              <TabsTrigger value="actuals">Planned vs. Actual</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="bar-chart">
+              <div className="h-[400px] mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={categoryData}
+                    margin={{
+                      top: 20,
+                      right: 30,
+                      left: 20,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="category" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                    <Legend />
+                    <Bar dataKey="plannedRevenue" name="Planned Revenue" fill="#8884d8" />
+                    <Bar dataKey="actualRevenue" name="Actual Revenue" fill="#4c1d95" />
+                    <Bar dataKey="plannedCost" name="Planned Cost" fill="#fca5a5" />
+                    <Bar dataKey="actualCost" name="Actual Cost" fill="#ef4444" />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
-            </PopoverContent>
-          </Popover>
-          <Button onClick={printReport} variant="outline" size="sm" className="flex items-center gap-2">
-            <Printer className="h-4 w-4" />
-            Print
-          </Button>
-          <Button onClick={downloadExcelReport} size="sm" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Excel
-          </Button>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
-            <p className={`text-xs ${summary.totalRevenueVariance >= 0 ? "text-green-500" : "text-red-500"}`}>
-              {summary.totalRevenueVariance >= 0 ? "+" : ""}{formatCurrency(summary.totalRevenueVariance)} vs Budget
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalExpenses)}</div>
-            <p className={`text-xs ${summary.totalCostVariance >= 0 ? "text-green-500" : "text-red-500"}`}>
-              {summary.totalCostVariance >= 0 ? "+" : ""}{formatCurrency(summary.totalCostVariance)} vs Budget
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(netProfit)}</div>
-            <p className={`text-xs ${summary.profitVariance >= 0 ? "text-green-500" : "text-red-500"}`}>
-              {summary.profitVariance >= 0 ? "+" : ""}{formatCurrency(summary.profitVariance)} vs Budget
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Profit Margin</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{profitMargin}%</div>
-            <p className={`text-xs ${parseFloat(summary.profitMarginPlanned) <= profitMargin ? "text-green-500" : "text-red-500"}`}>
-              {parseFloat(summary.profitMarginPlanned) <= profitMargin ? "+" : ""}
-              {(profitMargin - parseFloat(summary.profitMarginPlanned)).toFixed(2)}% vs Budget
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="bg-muted/40">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="revenue">Revenue</TabsTrigger>
-          <TabsTrigger value="expenses">Expenses</TabsTrigger>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="overflow-hidden">
-              <CardHeader>
-                <CardTitle className="text-lg">Revenue vs Expenses</CardTitle>
-                <CardDescription>Comparison of actual revenue and expenses</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={[
-                        { name: 'Revenue', value: totalRevenue, planned: summary.totalPlannedRevenue },
-                        { name: 'Expenses', value: totalExpenses, planned: summary.totalPlannedCost },
-                        { name: 'Profit', value: netProfit, planned: summary.plannedProfit }
-                      ]}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                      <Bar name="Actual" dataKey="value" fill="#0088FE" />
-                      <Bar name="Planned" dataKey="planned" fill="#82ca9d" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+            </TabsContent>
             
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Budget Summary</CardTitle>
-                <CardDescription>Planned vs actual budget figures</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Category</TableHead>
-                      <TableHead className="text-right">Planned</TableHead>
-                      <TableHead className="text-right">Actual</TableHead>
-                      <TableHead className="text-right">Variance</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell className="font-medium">Revenue</TableCell>
-                      <TableCell className="text-right">{formatCurrency(summary.totalPlannedRevenue)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(summary.totalActualRevenue)}</TableCell>
-                      <TableCell className={`text-right ${getVarianceClass(summary.totalRevenueVariance)}`}>
-                        {summary.totalRevenueVariance >= 0 ? "+" : ""}{formatCurrency(summary.totalRevenueVariance)}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">Expenses</TableCell>
-                      <TableCell className="text-right">{formatCurrency(summary.totalPlannedCost)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(summary.totalActualCost)}</TableCell>
-                      <TableCell className={`text-right ${getVarianceClass(-summary.totalCostVariance)}`}>
-                        {summary.totalCostVariance >= 0 ? "+" : ""}{formatCurrency(summary.totalCostVariance)}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow className="font-medium">
-                      <TableCell>Profit</TableCell>
-                      <TableCell className="text-right">{formatCurrency(summary.plannedProfit)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(summary.actualProfit)}</TableCell>
-                      <TableCell className={`text-right ${getVarianceClass(summary.profitVariance)}`}>
-                        {summary.profitVariance >= 0 ? "+" : ""}{formatCurrency(summary.profitVariance)}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow className="font-medium">
-                      <TableCell>Profit Margin</TableCell>
-                      <TableCell className="text-right">{summary.profitMarginPlanned}%</TableCell>
-                      <TableCell className="text-right">{summary.profitMarginActual}%</TableCell>
-                      <TableCell className={`text-right ${parseFloat(summary.profitMarginActual) >= parseFloat(summary.profitMarginPlanned) ? "text-green-500" : "text-red-500"}`}>
-                        {(parseFloat(summary.profitMarginActual) - parseFloat(summary.profitMarginPlanned)).toFixed(2)}%
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="revenue">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="overflow-hidden">
-              <CardHeader>
-                <CardTitle className="text-lg">Revenue by Source</CardTitle>
-                <CardDescription>Distribution of revenue across categories</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={revenueBySource}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {revenueBySource.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Revenue Details</CardTitle>
-                <CardDescription>Breakdown of revenue sources</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead className="text-right">Planned</TableHead>
-                      <TableHead className="text-right">Actual</TableHead>
-                      <TableHead className="text-right">Variance</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {revenueData.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.category}</TableCell>
-                        <TableCell>{item.description}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.planned)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.actual)}</TableCell>
-                        <TableCell className={`text-right ${getVarianceClass(item.variance)}`}>
-                          {item.variance >= 0 ? "+" : ""}{formatCurrency(item.variance)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="expenses">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="overflow-hidden">
-              <CardHeader>
-                <CardTitle className="text-lg">Expenses by Category</CardTitle>
-                <CardDescription>Distribution of expenses across categories</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={expensesByCategory}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {expensesByCategory.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Expense Details</CardTitle>
-                <CardDescription>Breakdown of expense categories</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead className="text-right">Planned</TableHead>
-                      <TableHead className="text-right">Actual</TableHead>
-                      <TableHead className="text-right">Variance</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {budgetData.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.category}</TableCell>
-                        <TableCell>{item.description}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.planned)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.actual)}</TableCell>
-                        <TableCell className={`text-right ${getVarianceClass(item.variance)}`}>
-                          {item.variance >= 0 ? "+" : ""}{formatCurrency(item.variance)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="invoices">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Invoices</CardTitle>
-              <CardDescription>List of all invoices</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>Invoice #</TableHead>
-                    <TableHead>Issue Date</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Comment</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invoiceData.map((invoice) => (
-                    <TableRow key={invoice.id}>
-                      <TableCell>{invoice.supplier}</TableCell>
-                      <TableCell>{invoice.invoiceNumber}</TableCell>
-                      <TableCell>{new Date(invoice.issueDate).toLocaleDateString()}</TableCell>
-                      <TableCell>{invoice.category}</TableCell>
-                      <TableCell className="text-right">
-                        {formatCurrency(invoice.amount)} {invoice.currency}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={invoice.status === "Paid" ? "default" : "outline"}>
-                          {invoice.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="max-w-[200px] truncate" title={invoice.comment}>
-                        {invoice.comment}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      
-      <CardFooter className="pt-6 print:hidden">
-        <Button onClick={downloadExcelReport} className="flex items-center gap-2">
-          <FileText className="h-4 w-4" />
-          Download Excel Report
-        </Button>
-      </CardFooter>
+            <TabsContent value="actuals">
+              <div className="h-[400px] mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      {
+                        name: "Revenue",
+                        planned: summary.plannedRevenue,
+                        actual: summary.actualRevenue,
+                      },
+                      {
+                        name: "Cost",
+                        planned: summary.plannedCost,
+                        actual: summary.actualCost,
+                      },
+                      {
+                        name: "Profit",
+                        planned: summary.plannedProfit,
+                        actual: summary.profit,
+                      },
+                    ]}
+                    margin={{
+                      top: 20,
+                      right: 30,
+                      left: 20,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                    <Legend />
+                    <Bar dataKey="planned" name="Planned" fill="#8884d8" />
+                    <Bar dataKey="actual" name="Actual" fill="#82ca9d" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -1,230 +1,104 @@
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FileDown, Printer, Search } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import CostsAnalysisTable from "./budget/CostsAnalysisTable";
-import RevenueAnalysisTable from "./budget/RevenueAnalysisTable";
-import ProfitLossSummary from "./budget/ProfitLossSummary";
-import AddCostForm from "./budget/AddCostForm";
-import AddRevenueForm from "./budget/AddRevenueForm";
-import { 
-  budgetData, 
-  revenueData, 
-  CostItem, 
-  RevenueItem, 
-  getUniqueCategories,
-  formatCurrency,
-  getVarianceClass,
-  calculateSummary
-} from "./budget/budgetData";
-import { handleCostChange, handleRevenueChange } from "./budget/budgetFormUtils";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import BudgetAnalysisHeader from "@/components/finance/BudgetAnalysisHeader";
+import BudgetFilter from "@/components/finance/BudgetFilter";
+import ProfitLossSummary from "@/components/finance/budget/ProfitLossSummary";
+import CostsAnalysisTable from "@/components/finance/budget/CostsAnalysisTable";
+import RevenueAnalysisTable from "@/components/finance/budget/RevenueAnalysisTable";
+import AddCostForm from "@/components/finance/budget/AddCostForm";
+import AddRevenueForm from "@/components/finance/budget/AddRevenueForm";
+import { CostItem, RevenueItem } from "@/components/finance/budget/types";
+import { costsData, revenueData, calculateSummary } from "@/components/finance/budget/budgetData";
 import { useEvent } from "@/contexts/EventContext";
-import EventFilter from "@/components/EventFilter";
 
+// Budget analysis component
 const BudgetAnalysis: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [viewMode, setViewMode] = useState<"costs" | "revenue" | "summary" | "add-cost" | "add-revenue">("costs");
-  const { selectedEventId } = useEvent();
-  
-  const [newCostItem, setNewCostItem] = useState<Partial<CostItem>>({
-    category: "",
-    description: "",
-    planned: 0,
-    actual: 0,
-    notes: "",
-    event: selectedEventId !== "all" ? selectedEventId : ""
-  });
-  
-  const [newRevenueItem, setNewRevenueItem] = useState<Partial<RevenueItem>>({
-    category: "",
-    description: "",
-    planned: 0,
-    actual: 0,
-    notes: "",
-    event: selectedEventId !== "all" ? selectedEventId : ""
-  });
+  // State for managing visibility of forms
+  const [showAddCostForm, setShowAddCostForm] = useState(false);
+  const [showAddRevenueForm, setShowAddRevenueForm] = useState(false);
+  const [costs, setCosts] = useState<CostItem[]>(costsData);
+  const [revenues, setRevenues] = useState<RevenueItem[]>(revenueData);
+  const [activeTab, setActiveTab] = useState("costs");
 
-  // Update new items event when selectedEventId changes
-  React.useEffect(() => {
-    if (selectedEventId !== "all") {
-      setNewCostItem(prev => ({ ...prev, event: selectedEventId }));
-      setNewRevenueItem(prev => ({ ...prev, event: selectedEventId }));
-    }
-  }, [selectedEventId]);
-  
-  const filteredCosts = budgetData.filter(
-    (item) =>
-      (filterCategory === "all" || item.category === filterCategory) &&
-      (item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       item.category.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (selectedEventId === "all" || item.event === selectedEventId)
-  );
+  // Get selected event context
+  const { selectedEventId, events } = useEvent();
 
-  const filteredRevenue = revenueData.filter(
-    (item) =>
-      (filterCategory === "all" || item.category === filterCategory) &&
-      (item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       item.category.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (selectedEventId === "all" || item.event === selectedEventId)
-  );
+  // Filter data based on selected event
+  const filteredCosts = selectedEventId === "all"
+    ? costs
+    : costs.filter(cost => cost.event === selectedEventId);
 
-  const summary = calculateSummary(
-    selectedEventId === "all" ? undefined : selectedEventId
-  );
-  const uniqueCategories = getUniqueCategories();
-  
-  const handleCostItemChange = (field: keyof CostItem, value: any) => {
-    handleCostChange(field, value, newCostItem, setNewCostItem);
+  const filteredRevenues = selectedEventId === "all"
+    ? revenues
+    : revenues.filter(revenue => revenue.event === selectedEventId);
+
+  // Handle adding new cost
+  const handleAddCost = (newCost: CostItem) => {
+    setCosts([...costs, newCost]);
+    setShowAddCostForm(false);
   };
 
-  const handleRevenueItemChange = (field: keyof RevenueItem, value: any) => {
-    handleRevenueChange(field, value, newRevenueItem, setNewRevenueItem);
+  // Handle adding new revenue
+  const handleAddRevenue = (newRevenue: RevenueItem) => {
+    setRevenues([...revenues, newRevenue]);
+    setShowAddRevenueForm(false);
   };
 
-  const submitCostItem = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("Cost item added successfully!");
-    setViewMode("costs");
-    
-    setNewCostItem({
-      category: "",
-      description: "",
-      planned: 0,
-      actual: 0,
-      notes: "",
-      event: selectedEventId !== "all" ? selectedEventId : ""
-    });
-  };
-
-  const submitRevenueItem = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("Revenue item added successfully!");
-    setViewMode("revenue");
-    
-    setNewRevenueItem({
-      category: "",
-      description: "",
-      planned: 0,
-      actual: 0,
-      notes: "",
-      event: selectedEventId !== "all" ? selectedEventId : ""
-    });
-  };
+  // Calculate summary data for the selected event
+  const summary = calculateSummary(filteredCosts, filteredRevenues);
 
   return (
     <div className="space-y-6">
-      <Tabs value={viewMode} onValueChange={(value: any) => setViewMode(value)} className="w-full">
-        <div className="flex flex-col md:flex-row md:justify-between gap-4">
-          <TabsList className="flex-wrap">
-            <TabsTrigger value="costs">Cost Analysis</TabsTrigger>
-            <TabsTrigger value="revenue">Revenue Analysis</TabsTrigger>
-            <TabsTrigger value="summary">P&L Summary</TabsTrigger>
-            <TabsTrigger value="add-cost">Add Cost Item</TabsTrigger>
-            <TabsTrigger value="add-revenue">Add Revenue Item</TabsTrigger>
-          </TabsList>
+      <BudgetAnalysisHeader
+        onAddCost={() => setShowAddCostForm(true)}
+        onAddRevenue={() => setShowAddRevenueForm(true)}
+      />
 
-          <EventFilter 
-            selectedEvent={selectedEventId}
-            onEventChange={evt => {}}
-            className="w-full md:w-auto"
-            showAllOption={true}
-          />
-        </div>
-        
-        {(viewMode === "costs" || viewMode === "revenue") && (
-          <div className="flex flex-col md:flex-row gap-4 mt-4">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search items..."
-                className="pl-9"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            <Select
-              value={filterCategory}
-              onValueChange={setFilterCategory}
-            >
-              <SelectTrigger className="w-full md:w-[180px]">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {uniqueCategories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+      <BudgetFilter />
 
-        <TabsContent value="costs" className="mt-6">
-          <CostsAnalysisTable 
-            filteredCosts={filteredCosts} 
-            totalActualCost={summary.totalActualCost} 
-            totalCostVariance={summary.totalCostVariance}
-            budgetDataLength={budgetData.length}
-            formatCurrency={formatCurrency}
-            getVarianceClass={getVarianceClass}
-            onAddCostClick={() => setViewMode("add-cost")}
-          />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="col-span-3">
+          <CardHeader className="pb-3">
+            <CardTitle>Budget Overview</CardTitle>
+            <CardDescription>
+              Financial summary for {selectedEventId === "all"
+                ? "all events"
+                : events.find(e => e.id === selectedEventId)?.name || "unknown event"
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ProfitLossSummary summary={summary} />
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="costs">Costs Analysis</TabsTrigger>
+          <TabsTrigger value="revenue">Revenue Analysis</TabsTrigger>
+        </TabsList>
+        <TabsContent value="costs">
+          <CostsAnalysisTable costs={filteredCosts} />
         </TabsContent>
-
-        <TabsContent value="revenue" className="mt-6">
-          <RevenueAnalysisTable
-            filteredRevenue={filteredRevenue}
-            totalActualRevenue={summary.totalActualRevenue}
-            totalRevenueVariance={summary.totalRevenueVariance}
-            revenueDataLength={revenueData.length}
-            formatCurrency={formatCurrency}
-            getVarianceClass={getVarianceClass}
-            onAddRevenueClick={() => setViewMode("add-revenue")}
-          />
-        </TabsContent>
-
-        <TabsContent value="summary" className="mt-6">
-          <ProfitLossSummary
-            totalActualRevenue={summary.totalActualRevenue}
-            totalActualCost={summary.totalActualCost}
-            actualProfit={summary.actualProfit}
-            profitMarginActual={summary.profitMarginActual}
-            totalPlannedRevenue={summary.totalPlannedRevenue}
-            totalRevenueVariance={summary.totalRevenueVariance}
-            totalPlannedCost={summary.totalPlannedCost}
-            totalCostVariance={summary.totalCostVariance}
-            profitVariance={summary.profitVariance}
-            formatCurrency={formatCurrency}
-            getVarianceClass={getVarianceClass}
-          />
-        </TabsContent>
-
-        <TabsContent value="add-cost" className="mt-6">
-          <AddCostForm
-            newCostItem={newCostItem}
-            handleCostChange={handleCostItemChange}
-            submitCostItem={submitCostItem}
-            onCancel={() => setViewMode("costs")}
-          />
-        </TabsContent>
-
-        <TabsContent value="add-revenue" className="mt-6">
-          <AddRevenueForm
-            newRevenueItem={newRevenueItem}
-            handleRevenueChange={handleRevenueItemChange}
-            submitRevenueItem={submitRevenueItem}
-            onCancel={() => setViewMode("revenue")}
-          />
+        <TabsContent value="revenue">
+          <RevenueAnalysisTable revenues={filteredRevenues} />
         </TabsContent>
       </Tabs>
+
+      {/* Forms for adding new budget items */}
+      <AddCostForm
+        open={showAddCostForm}
+        onOpenChange={setShowAddCostForm}
+        onSave={handleAddCost}
+      />
+      <AddRevenueForm
+        open={showAddRevenueForm}
+        onOpenChange={setShowAddRevenueForm}
+        onSave={handleAddRevenue}
+      />
     </div>
   );
 };
