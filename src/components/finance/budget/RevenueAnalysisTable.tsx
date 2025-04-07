@@ -81,6 +81,11 @@ const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
     setEditingItemId(null);
   };
 
+  const handleCancel = () => {
+    setEditingItemId(null);
+    toast.info("Edit cancelled");
+  };
+
   const handleDelete = (id: string) => {
     setSelectedItemId(id);
     setShowDeleteDialog(true);
@@ -202,6 +207,7 @@ const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
                       <ActionButtons
                         onEdit={() => handleEdit(item.id)}
                         onSave={() => handleSave(item.id)}
+                        onCancel={handleCancel}
                         onDelete={() => handleDelete(item.id)}
                         isEditing={editingItemId === item.id}
                       />

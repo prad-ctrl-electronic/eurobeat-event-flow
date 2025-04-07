@@ -77,9 +77,13 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
 
   const handleSave = (id: string) => {
     // In a real app, this would save to a database
-    // For now, we'll just show a success toast
     toast.success(`Changes to cost item "${editedValues[id].description}" saved successfully`);
     setEditingItemId(null);
+  };
+
+  const handleCancel = () => {
+    setEditingItemId(null);
+    toast.info("Edit cancelled");
   };
 
   const handleDelete = (id: string) => {
@@ -203,6 +207,7 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
                       <ActionButtons
                         onEdit={() => handleEdit(item.id)}
                         onSave={() => handleSave(item.id)}
+                        onCancel={handleCancel}
                         onDelete={() => handleDelete(item.id)}
                         isEditing={editingItemId === item.id}
                       />

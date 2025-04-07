@@ -95,6 +95,11 @@ const FinancialTasks = () => {
     setEditingTaskId(null);
   };
 
+  const handleCancel = () => {
+    setEditingTaskId(null);
+    toast.info("Edit cancelled");
+  };
+
   const handleDelete = (taskId: number) => {
     setSelectedTask(taskId);
     setShowDeleteDialog(true);
@@ -226,17 +231,13 @@ const FinancialTasks = () => {
               <ActionButtons
                 onEdit={() => handleEdit(task.id)}
                 onSave={() => handleSave(task.id)}
+                onCancel={handleCancel}
                 onDelete={() => handleDelete(task.id)}
                 isEditing={editingTaskId === task.id}
               />
               {!editingTaskId && (
                 <Button variant="ghost" size="icon">
                   <ChevronRight className="h-5 w-5" />
-                </Button>
-              )}
-              {editingTaskId === task.id && (
-                <Button variant="ghost" size="icon" onClick={() => setEditingTaskId(null)}>
-                  <X className="h-5 w-5" />
                 </Button>
               )}
             </div>

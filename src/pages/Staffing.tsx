@@ -22,7 +22,18 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const staffMembers = [
+interface StaffMember {
+  id: number;
+  name: string;
+  role: string;
+  email: string;
+  initials: string;
+  status: string;
+  events: number;
+  contract: string;
+}
+
+const staffMembers: StaffMember[] = [
   {
     id: 1,
     name: "Alex Johnson",
@@ -70,20 +81,49 @@ const Staffing = () => {
   const [selectedStaff, setSelectedStaff] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingStaff, setEditingStaff] = useState<number | null>(null);
-  const [editedValues, setEditedValues] = useState<Record<string, any>>({});
+  const [editedValues, setEditedValues] = useState<Record<number, StaffMember>>({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [staff, setStaff] = useState<StaffMember[]>(staffMembers);
+  
+  const filteredStaff = staff.filter(member => 
+    member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   
   const handleEdit = (staffId: number) => {
-    setEditingStaff(staffId);
+    const member = staff.find(s => s.id === staffId);
+    if (member) {
+      setEditedValues({
+        ...editedValues,
+        [staffId]: { ...member }
+      });
+      setEditingStaff(staffId);
+    }
+  };
+
+  const handleChange = (staffId: number, field: keyof StaffMember, value: string | number) => {
     setEditedValues({
       ...editedValues,
-      [staffId]: { ...staffMembers.find(s => s.id === staffId) }
+      [staffId]: {
+        ...editedValues[staffId],
+        [field]: value
+      }
     });
-    toast.info(`Edit mode enabled for staff ${staffId}`);
   };
 
   const handleSave = (staffId: number) => {
-    toast.success(`Staff member ${staffId} updated successfully`);
+    // In a real app, this would save to a database
+    setStaff(staff.map(member => 
+      member.id === staffId ? editedValues[staffId] : member
+    ));
+    toast.success(`Staff member ${editedValues[staffId].name} updated successfully`);
     setEditingStaff(null);
+  };
+  
+  const handleCancel = () => {
+    setEditingStaff(null);
+    toast.info("Edit cancelled");
   };
 
   const handleDelete = (staffId: number) => {
@@ -93,9 +133,11 @@ const Staffing = () => {
 
   const confirmDelete = () => {
     if (selectedStaff !== null) {
-      toast.success(`Staff member ${selectedStaff} deleted successfully`);
+      const memberToDelete = staff.find(s => s.id === selectedStaff);
+      setStaff(staff.filter(s => s.id !== selectedStaff));
+      toast.success(`Staff member ${memberToDelete?.name} deleted successfully`);
       setShowDeleteDialog(false);
-      // In a real application, you would remove the staff member from the data source
+      setSelectedStaff(null);
     }
   };
 
@@ -112,7 +154,12 @@ const Staffing = () => {
             <div className="flex w-full sm:w-auto gap-2">
               <div className="relative flex-1 sm:flex-initial">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search staff..." className="pl-9" />
+                <Input 
+                  placeholder="Search staff..." 
+                  className="pl-9" 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
               <Button className="gap-2">
                 <BadgePlus className="h-4 w-4" /> Add Staff
@@ -126,7 +173,7 @@ const Staffing = () => {
                 <div className="h-12 w-12 rounded-full bg-primary-purple/20 flex items-center justify-center mb-4">
                   <Users className="h-6 w-6 text-primary-purple" />
                 </div>
-                <CardTitle className="text-2xl mb-1">24</CardTitle>
+                <CardTitle className="text-2xl mb-1">{staff.length}</CardTitle>
                 <CardDescription>Total Staff</CardDescription>
               </CardContent>
             </Card>
@@ -136,7 +183,7 @@ const Staffing = () => {
                 <div className="h-12 w-12 rounded-full bg-secondary-blue/20 flex items-center justify-center mb-4">
                   <Calendar className="h-6 w-6 text-secondary-blue" />
                 </div>
-                <CardTitle className="text-2xl mb-1">18</CardTitle>
+                <CardTitle className="text-2xl mb-1">{staff.filter(s => s.status === "active").length}</CardTitle>
                 <CardDescription>Active This Month</CardDescription>
               </CardContent>
             </Card>
@@ -178,51 +225,114 @@ const Staffing = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {staffMembers.map((member) => (
+                    {filteredStaff.map((member) => (
                       <div key={member.id} className="flex items-center justify-between p-4 border border-white/10 rounded-lg bg-muted/20">
                         <div className="flex items-center gap-4">
                           <Avatar className="h-10 w-10 border border-white/10">
                             <AvatarFallback className="bg-primary-purple/20 text-primary-purple">
-                              {member.initials}
+                              {editingStaff === member.id ? 
+                                editedValues[member.id]?.name
+                                  .split(' ')
+                                  .map(n => n[0])
+                                  .join('') :
+                                member.initials}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <h3 className="font-medium">{member.name}</h3>
-                            <p className="text-sm text-muted-foreground">{member.role}</p>
+                            {editingStaff === member.id ? (
+                              <Input
+                                className="font-medium mb-1"
+                                value={editedValues[member.id]?.name || member.name}
+                                onChange={(e) => handleChange(member.id, 'name', e.target.value)}
+                              />
+                            ) : (
+                              <h3 className="font-medium">{member.name}</h3>
+                            )}
+                            {editingStaff === member.id ? (
+                              <Input
+                                className="text-sm text-muted-foreground"
+                                value={editedValues[member.id]?.role || member.role}
+                                onChange={(e) => handleChange(member.id, 'role', e.target.value)}
+                              />
+                            ) : (
+                              <p className="text-sm text-muted-foreground">{member.role}</p>
+                            )}
                           </div>
                         </div>
                         
-                        <div className="hidden md:flex items-center gap-4">
-                          <div className="text-sm">
-                            <p className="text-muted-foreground">Email</p>
-                            <p className="font-medium">{member.email}</p>
+                        {editingStaff === member.id ? (
+                          <div className="grid grid-cols-3 gap-4 flex-1 mx-4">
+                            <div>
+                              <label className="text-xs text-muted-foreground mb-1 block">Email</label>
+                              <Input
+                                value={editedValues[member.id]?.email || member.email}
+                                onChange={(e) => handleChange(member.id, 'email', e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs text-muted-foreground mb-1 block">Events</label>
+                              <Input
+                                type="number"
+                                value={editedValues[member.id]?.events || member.events}
+                                onChange={(e) => handleChange(member.id, 'events', parseInt(e.target.value))}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs text-muted-foreground mb-1 block">Contract</label>
+                              <Input
+                                value={editedValues[member.id]?.contract || member.contract}
+                                onChange={(e) => handleChange(member.id, 'contract', e.target.value)}
+                              />
+                            </div>
                           </div>
-                          
-                          <div className="text-sm">
-                            <p className="text-muted-foreground">Events</p>
-                            <p className="font-medium">{member.events}</p>
+                        ) : (
+                          <div className="hidden md:flex items-center gap-4">
+                            <div className="text-sm">
+                              <p className="text-muted-foreground">Email</p>
+                              <p className="font-medium">{member.email}</p>
+                            </div>
+                            
+                            <div className="text-sm">
+                              <p className="text-muted-foreground">Events</p>
+                              <p className="font-medium">{member.events}</p>
+                            </div>
+                            
+                            <div className="text-sm">
+                              <p className="text-muted-foreground">Contract</p>
+                              <p className="font-medium">{member.contract}</p>
+                            </div>
                           </div>
-                          
-                          <div className="text-sm">
-                            <p className="text-muted-foreground">Contract</p>
-                            <p className="font-medium">{member.contract}</p>
-                          </div>
-                        </div>
+                        )}
                         
                         <div className="flex items-center gap-2">
-                          <Badge className={member.status === "active" ? "bg-emerald-500" : "bg-slate-500"}>
-                            {member.status === "active" ? "Active" : "Inactive"}
-                          </Badge>
-                          <Button variant="outline" size="sm">View</Button>
+                          {editingStaff === member.id ? (
+                            <Input
+                              className="w-24"
+                              value={editedValues[member.id]?.status || member.status}
+                              onChange={(e) => handleChange(member.id, 'status', e.target.value)}
+                            />
+                          ) : (
+                            <Badge className={member.status === "active" ? "bg-emerald-500" : "bg-slate-500"}>
+                              {member.status === "active" ? "Active" : "Inactive"}
+                            </Badge>
+                          )}
+                          {!editingStaff && <Button variant="outline" size="sm">View</Button>}
                           <ActionButtons
                             onEdit={() => handleEdit(member.id)}
                             onSave={() => handleSave(member.id)}
+                            onCancel={handleCancel}
                             onDelete={() => handleDelete(member.id)}
                             isEditing={editingStaff === member.id}
                           />
                         </div>
                       </div>
                     ))}
+
+                    {filteredStaff.length === 0 && (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground">No staff members found</p>
+                      </div>  
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -255,8 +365,8 @@ const Staffing = () => {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the staff member
-              {selectedStaff !== null && staffMembers.find(s => s.id === selectedStaff) 
-                ? ` "${staffMembers.find(s => s.id === selectedStaff)?.name}"` 
+              {selectedStaff !== null && staff.find(s => s.id === selectedStaff) 
+                ? ` "${staff.find(s => s.id === selectedStaff)?.name}"` 
                 : ""}.
             </AlertDialogDescription>
           </AlertDialogHeader>

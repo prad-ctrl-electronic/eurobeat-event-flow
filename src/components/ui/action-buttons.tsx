@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Pencil, Trash2, Save } from "lucide-react";
+import { Pencil, Trash2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -13,6 +13,7 @@ interface ActionButtonsProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onSave?: () => void;
+  onCancel?: () => void;
   size?: "default" | "sm" | "lg" | "icon";
   isEditing?: boolean;
   disabled?: boolean;
@@ -22,6 +23,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onEdit,
   onDelete,
   onSave,
+  onCancel,
   size = "sm",
   isEditing = false,
   disabled = false,
@@ -67,6 +69,28 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
             </TooltipTrigger>
             <TooltipContent>
               <p>Save</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+      
+      {isEditing && onCancel && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={onCancel}
+                variant="ghost"
+                size={size}
+                className="h-8 w-8 p-0"
+                disabled={disabled}
+              >
+                <X className="h-4 w-4 text-muted-foreground hover:text-amber-500" />
+                <span className="sr-only">Cancel</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Cancel</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
