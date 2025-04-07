@@ -21,12 +21,25 @@ import LoanForm from "./LoanForm";
 import ExpenseActions from "./ExpenseActions";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { ActionButtons } from "@/components/ui/action-buttons";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const LoansTabContent: React.FC<{ invoiceDebts: InvoiceDebt[] }> = ({ invoiceDebts }) => {
   const [loans, setLoans] = useState<Loan[]>(loansData);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("loans");
   const [repaymentAmount, setRepaymentAmount] = useState<{ [key: string]: string }>({});
+  const [selectedLoan, setSelectedLoan] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   // Filter loans based on search term
   const filteredLoans = loans.filter(
@@ -65,6 +78,40 @@ const LoansTabContent: React.FC<{ invoiceDebts: InvoiceDebt[] }> = ({ invoiceDeb
         return <Badge className="bg-red-500">Defaulted</Badge>;
       default:
         return <Badge>{status}</Badge>;
+    }
+  };
+  
+  const totalLoansOutstanding = loans.reduce((sum, loan) => sum + loan.outstandingAmount, 0);
+  const totalInvoiceDebts = invoiceDebts.reduce((sum, debt) => {
+    // Simplified conversion to EUR for display
+    let amount = debt.amount;
+    if (debt.currency === "PLN") amount /= 4.3;
+    if (debt.currency === "HUF") amount /= 380;
+    if (debt.currency === "USD") amount *= 0.91;
+    return sum + amount;
+  }, 0);
+  const monthlyDebtService = calculateMonthlyDebtService(loans);
+  
+  const handleLoanAdded = (newLoan: Loan) => {
+    setLoans([...loans, newLoan]);
+  };
+
+  const handleEdit = (loanId: string) => {
+    setSelectedLoan(loanId);
+    toast.info(`Edit functionality for loan ${loanId} will be implemented soon`);
+  };
+
+  const handleDelete = (loanId: string) => {
+    setSelectedLoan(loanId);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedLoan) {
+      // In a real application, you would remove the loan from the data source
+      setLoans(loans.filter(loan => loan.id !== selectedLoan));
+      toast.success(`Loan ${selectedLoan} deleted successfully`);
+      setShowDeleteDialog(false);
     }
   };
   
@@ -199,46 +246,52 @@ const LoansTabContent: React.FC<{ invoiceDebts: InvoiceDebt[] }> = ({ invoiceDeb
                     </TableCell>
                     <TableCell>{getLoanStatusBadge(loan.status)}</TableCell>
                     <TableCell>
-                      {loan.status === "active" && (
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">Make Payment</Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Make Loan Repayment</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                              <div className="space-y-2">
-                                <p><strong>Loan:</strong> {loan.id} - {loan.lender}</p>
-                                <p><strong>Outstanding:</strong> {loan.outstandingAmount.toLocaleString()} {loan.currency}</p>
-                                <p><strong>Regular Payment:</strong> {loan.repaymentAmount?.toLocaleString()} {loan.currency}</p>
+                      <div className="flex items-center gap-2">
+                        {loan.status === "active" && (
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm">Make Payment</Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Make Loan Repayment</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                  <p><strong>Loan:</strong> {loan.id} - {loan.lender}</p>
+                                  <p><strong>Outstanding:</strong> {loan.outstandingAmount.toLocaleString()} {loan.currency}</p>
+                                  <p><strong>Regular Payment:</strong> {loan.repaymentAmount?.toLocaleString()} {loan.currency}</p>
+                                </div>
+                                <div className="space-y-2">
+                                  <label htmlFor="repayment-amount">Payment Amount ({loan.currency})</label>
+                                  <Input
+                                    id="repayment-amount"
+                                    type="number"
+                                    value={repaymentAmount[loan.id] || ""}
+                                    onChange={(e) => setRepaymentAmount({
+                                      ...repaymentAmount,
+                                      [loan.id]: e.target.value
+                                    })}
+                                    min="0"
+                                    step="0.01"
+                                    placeholder={loan.repaymentAmount?.toString() || "0.00"}
+                                  />
+                                </div>
+                                <Button 
+                                  className="w-full" 
+                                  onClick={() => handleRepayment(loan.id)}
+                                >
+                                  Submit Payment
+                                </Button>
                               </div>
-                              <div className="space-y-2">
-                                <label htmlFor="repayment-amount">Payment Amount ({loan.currency})</label>
-                                <Input
-                                  id="repayment-amount"
-                                  type="number"
-                                  value={repaymentAmount[loan.id] || ""}
-                                  onChange={(e) => setRepaymentAmount({
-                                    ...repaymentAmount,
-                                    [loan.id]: e.target.value
-                                  })}
-                                  min="0"
-                                  step="0.01"
-                                  placeholder={loan.repaymentAmount?.toString() || "0.00"}
-                                />
-                              </div>
-                              <Button 
-                                className="w-full" 
-                                onClick={() => handleRepayment(loan.id)}
-                              >
-                                Submit Payment
-                              </Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      )}
+                            </DialogContent>
+                          </Dialog>
+                        )}
+                        <ActionButtons
+                          onEdit={() => handleEdit(loan.id)}
+                          onDelete={() => handleDelete(loan.id)}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -267,6 +320,7 @@ const LoansTabContent: React.FC<{ invoiceDebts: InvoiceDebt[] }> = ({ invoiceDeb
                 <TableHead>Amount</TableHead>
                 <TableHead>Due Date</TableHead>
                 <TableHead>Days Overdue</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -282,11 +336,17 @@ const LoansTabContent: React.FC<{ invoiceDebts: InvoiceDebt[] }> = ({ invoiceDeb
                         {debt.daysPastDue} days
                       </Badge>
                     </TableCell>
+                    <TableCell>
+                      <ActionButtons
+                        onEdit={() => toast.info(`Edit functionality for invoice ${debt.invoiceId} will be implemented soon`)}
+                        onDelete={() => toast.info(`Delete functionality for invoice ${debt.invoiceId} will be implemented soon`)}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center h-24">
+                  <TableCell colSpan={6} className="text-center h-24">
                     No unpaid invoices found.
                   </TableCell>
                 </TableRow>
@@ -299,6 +359,23 @@ const LoansTabContent: React.FC<{ invoiceDebts: InvoiceDebt[] }> = ({ invoiceDeb
       <TabsContent value="addLoan" className="mt-0">
         <LoanForm onLoanAdded={handleLoanAdded} existingLoans={loans} />
       </TabsContent>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the loan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

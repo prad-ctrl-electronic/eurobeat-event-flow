@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CostItem } from "./budgetData";
+import { ActionButtons } from "@/components/ui/action-buttons";
+import { toast } from "sonner";
 
 interface CostsAnalysisTableProps {
   filteredCosts: CostItem[];
@@ -33,6 +35,14 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
   getVarianceClass,
   onAddCostClick
 }) => {
+  const handleEdit = (id: string) => {
+    toast.info(`Edit functionality for cost item ${id} will be implemented soon`);
+  };
+
+  const handleDelete = (id: string) => {
+    toast.info(`Delete functionality for cost item ${id} will be implemented soon`);
+  };
+
   return (
     <Card className="card-gradient">
       <CardHeader className="flex flex-row justify-between">
@@ -66,6 +76,7 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
                 <TableHead className="text-right">Actual (€)</TableHead>
                 <TableHead className="text-right">Variance (€)</TableHead>
                 <TableHead>Notes</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -80,11 +91,17 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
                       {item.variance > 0 ? "+" : ""}{formatCurrency(item.variance)}
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate">{item.notes}</TableCell>
+                    <TableCell>
+                      <ActionButtons
+                        onEdit={() => handleEdit(item.id)}
+                        onDelete={() => handleDelete(item.id)}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center h-24">
+                  <TableCell colSpan={7} className="text-center h-24">
                     No budget items found matching your search.
                   </TableCell>
                 </TableRow>

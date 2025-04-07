@@ -9,6 +9,18 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ActionButtons } from "@/components/ui/action-buttons";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const staffMembers = [
   {
@@ -55,6 +67,26 @@ const staffMembers = [
 
 const Staffing = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<number | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
+  const handleEdit = (staffId: number) => {
+    setSelectedStaff(staffId);
+    toast.info(`Edit functionality for staff ${staffId} will be implemented soon`);
+  };
+
+  const handleDelete = (staffId: number) => {
+    setSelectedStaff(staffId);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedStaff !== null) {
+      toast.success(`Staff member ${selectedStaff} deleted successfully`);
+      setShowDeleteDialog(false);
+      // In a real application, you would remove the staff member from the data source
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -171,6 +203,10 @@ const Staffing = () => {
                             {member.status === "active" ? "Active" : "Inactive"}
                           </Badge>
                           <Button variant="outline" size="sm">View</Button>
+                          <ActionButtons
+                            onEdit={() => handleEdit(member.id)}
+                            onDelete={() => handleDelete(member.id)}
+                          />
                         </div>
                       </div>
                     ))}
@@ -199,6 +235,26 @@ const Staffing = () => {
           </Tabs>
         </main>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the staff member
+              {selectedStaff !== null && staffMembers.find(s => s.id === selectedStaff) 
+                ? ` "${staffMembers.find(s => s.id === selectedStaff)?.name}"` 
+                : ""}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

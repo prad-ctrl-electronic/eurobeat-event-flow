@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Table,
@@ -17,6 +18,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ActionButtons } from "@/components/ui/action-buttons";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // Export the invoice data to be used in other components
 export const invoiceData = [
@@ -152,6 +165,8 @@ const InvoiceTable: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState(invoiceData);
   const [showComments, setShowComments] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<number | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase();
@@ -182,6 +197,24 @@ const InvoiceTable: React.FC = () => {
 
   const toggleComments = () => {
     setShowComments(!showComments);
+  };
+  
+  const handleEdit = (index: number) => {
+    setSelectedInvoice(index);
+    toast.info(`Edit functionality for invoice ${filteredData[index].invoiceNumber} will be implemented soon`);
+  };
+
+  const handleDelete = (index: number) => {
+    setSelectedInvoice(index);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedInvoice !== null) {
+      toast.success(`Invoice ${filteredData[selectedInvoice].invoiceNumber} deleted successfully`);
+      setShowDeleteDialog(false);
+      // In a real application, you would remove the item from the data source here
+    }
   };
 
   return (
@@ -221,7 +254,7 @@ const InvoiceTable: React.FC = () => {
       
       <div className="border rounded-md overflow-x-auto">
         <Table>
-          <TableCaption className="mt-2">
+          <TableCaption>
             <div className="flex justify-between items-center px-4">
               <span>Showing {filteredData.length} of {invoiceData.length} invoices</span>
               <span className="font-medium">Total: PLN {calculateTotal()}</span>
@@ -240,12 +273,13 @@ const InvoiceTable: React.FC = () => {
               <TableHead>Status</TableHead>
               <TableHead>Payment Date</TableHead>
               {showComments && <TableHead>Comments</TableHead>}
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredData.length > 0 ? (
               filteredData.map((invoice, index) => (
-                <TableRow key={index} className="cursor-pointer hover:bg-muted/60">
+                <TableRow key={index} className="hover:bg-muted/60">
                   <TableCell className="font-medium">{invoice.code}</TableCell>
                   <TableCell>{invoice.supplier}</TableCell>
                   <TableCell>{invoice.invoiceNumber}</TableCell>
@@ -281,11 +315,17 @@ const InvoiceTable: React.FC = () => {
                       )}
                     </TableCell>
                   )}
+                  <TableCell>
+                    <ActionButtons
+                      onEdit={() => handleEdit(index)}
+                      onDelete={() => handleDelete(index)}
+                    />
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={showComments ? 11 : 10} className="text-center h-24">
+                <TableCell colSpan={showComments ? 12 : 11} className="text-center h-24">
                   No invoices found matching your search.
                 </TableCell>
               </TableRow>
@@ -293,6 +333,26 @@ const InvoiceTable: React.FC = () => {
           </TableBody>
         </Table>
       </div>
+      
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the invoice 
+              {selectedInvoice !== null && filteredData[selectedInvoice] 
+                ? ` "${filteredData[selectedInvoice].invoiceNumber}" from ${filteredData[selectedInvoice].supplier}` 
+                : ""}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

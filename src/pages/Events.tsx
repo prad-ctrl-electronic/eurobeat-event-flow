@@ -11,9 +11,74 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CalendarIcon, MapPin, Users, Clock, Euro, Search, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { ActionButtons } from "@/components/ui/action-buttons";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+const events = [
+  {
+    id: 1,
+    name: "Techno Fusion Festival",
+    location: "Berlin, Germany",
+    date: "May 15, 2025",
+    time: "18:00 - 04:00",
+    capacity: "3,000",
+    revenue: "€149,500",
+    status: "upcoming"
+  },
+  {
+    id: 2,
+    name: "Bass Nation",
+    location: "Amsterdam, Netherlands",
+    date: "June 5, 2025",
+    time: "20:00 - 06:00",
+    capacity: "2,500",
+    revenue: "€125,000",
+    status: "upcoming"
+  },
+  {
+    id: 3,
+    name: "Electronica Showcase",
+    location: "Paris, France",
+    date: "June 19, 2025",
+    time: "19:00 - 03:00",
+    capacity: "1,500",
+    revenue: "€85,000",
+    status: "upcoming"
+  }
+];
 
 const Events = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<number | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const handleEdit = (eventId: number) => {
+    setSelectedEvent(eventId);
+    toast.info(`Edit functionality for event ${eventId} will be implemented soon`);
+  };
+
+  const handleDelete = (eventId: number) => {
+    setSelectedEvent(eventId);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedEvent !== null) {
+      toast.success(`Event ${selectedEvent} deleted successfully`);
+      setShowDeleteDialog(false);
+      // In a real application, you would remove the event from the data source
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -46,131 +111,54 @@ const Events = () => {
             
             <TabsContent value="upcoming">
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {/* Event Card 1 */}
-                <Card className="card-gradient overflow-hidden">
-                  <div className="h-32 bg-gradient-to-r from-primary-purple/40 to-accent-pink/40 relative">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="text-2xl font-bold text-white/90 text-center">Techno Fusion Festival</h3>
-                    </div>
-                  </div>
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span>Berlin, Germany</span>
+                {events.map((event) => (
+                  <Card key={event.id} className="card-gradient overflow-hidden">
+                    <div className="h-32 bg-gradient-to-r from-primary-purple/40 to-accent-pink/40 relative">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <h3 className="text-2xl font-bold text-white/90 text-center">{event.name}</h3>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                        <span>May 15, 2025</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>18:00 - 04:00</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span>3,000 capacity</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Euro className="h-4 w-4 text-muted-foreground" />
-                        <span>€149,500 projected revenue</span>
+                      <div className="absolute top-2 right-2">
+                        <ActionButtons
+                          onEdit={() => handleEdit(event.id)}
+                          onDelete={() => handleDelete(event.id)}
+                        />
                       </div>
                     </div>
-                    
-                    <div className="flex justify-between items-center mt-6">
-                      <Badge className="bg-primary-purple hover:bg-primary-purple/90">
-                        Upcoming
-                      </Badge>
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                {/* Event Card 2 */}
-                <Card className="card-gradient overflow-hidden">
-                  <div className="h-32 bg-gradient-to-r from-secondary-blue/40 to-accent-teal/40 relative">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="text-2xl font-bold text-white/90 text-center">Bass Nation</h3>
-                    </div>
-                  </div>
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span>Amsterdam, Netherlands</span>
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span>{event.location}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                          <span>{event.date}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span>{event.time}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span>{event.capacity} capacity</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Euro className="h-4 w-4 text-muted-foreground" />
+                          <span>{event.revenue} projected revenue</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                        <span>June 5, 2025</span>
+                      
+                      <div className="flex justify-between items-center mt-6">
+                        <Badge className="bg-primary-purple hover:bg-primary-purple/90">
+                          Upcoming
+                        </Badge>
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>20:00 - 06:00</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span>2,500 capacity</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Euro className="h-4 w-4 text-muted-foreground" />
-                        <span>€125,000 projected revenue</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-between items-center mt-6">
-                      <Badge className="bg-primary-purple hover:bg-primary-purple/90">
-                        Upcoming
-                      </Badge>
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                {/* Event Card 3 */}
-                <Card className="card-gradient overflow-hidden">
-                  <div className="h-32 bg-gradient-to-r from-accent-pink/40 to-accent-teal/40 relative">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="text-2xl font-bold text-white/90 text-center">Electronica Showcase</h3>
-                    </div>
-                  </div>
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span>Paris, France</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                        <span>June 19, 2025</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>19:00 - 03:00</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span>1,500 capacity</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Euro className="h-4 w-4 text-muted-foreground" />
-                        <span>€85,000 projected revenue</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-between items-center mt-6">
-                      <Badge className="bg-primary-purple hover:bg-primary-purple/90">
-                        Upcoming
-                      </Badge>
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
               
               <Card className="card-gradient mt-8">
@@ -268,6 +256,26 @@ const Events = () => {
           </Tabs>
         </main>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the event
+              {selectedEvent !== null && events.find(e => e.id === selectedEvent) 
+                ? ` "${events.find(e => e.id === selectedEvent)?.name}"` 
+                : ""}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
