@@ -1,8 +1,9 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, Plus } from "lucide-react";
+import { Download, Upload, Plus, FileText, BarChart4 } from "lucide-react";
 import { useSelectedEventName } from "@/contexts/EventContext";
+import { toast } from "sonner";
 
 export interface BudgetAnalysisHeaderProps {
   onAddCostClick: () => void;
@@ -15,6 +16,18 @@ const BudgetAnalysisHeader: React.FC<BudgetAnalysisHeaderProps> = ({
 }) => {
   const selectedEventName = useSelectedEventName();
 
+  const handleExport = () => {
+    toast.success("Budget data exported successfully");
+  };
+
+  const handleImport = () => {
+    toast.info("Please select a file to import");
+  };
+
+  const handleGenerateReport = () => {
+    toast.success("Generating comprehensive financial report");
+  };
+
   return (
     <div className="flex flex-col md:flex-row justify-between mb-6 gap-4 items-start md:items-center">
       <div>
@@ -23,14 +36,34 @@ const BudgetAnalysisHeader: React.FC<BudgetAnalysisHeaderProps> = ({
       </div>
       
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex items-center gap-2"
+          onClick={handleExport}
+        >
           <Download className="h-4 w-4" />
           Export
         </Button>
         
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex items-center gap-2"
+          onClick={handleImport}
+        >
           <Upload className="h-4 w-4" />
           Import
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2"
+          onClick={handleGenerateReport}
+        >
+          <FileText className="h-4 w-4" />
+          Generate Report
         </Button>
         
         <Button

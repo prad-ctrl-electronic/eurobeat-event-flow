@@ -81,20 +81,20 @@ const FinancialReport: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <Card>
               <CardContent className="pt-6">
-                <div className="text-2xl font-bold">{formatCurrency(summary.totalRevenue)}</div>
+                <div className="text-2xl font-bold">{formatCurrency(summary.totalActualRevenue)}</div>
                 <p className="text-xs text-muted-foreground">Total Revenue</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
-                <div className="text-2xl font-bold">{formatCurrency(summary.totalCost)}</div>
+                <div className="text-2xl font-bold">{formatCurrency(summary.totalActualCost)}</div>
                 <p className="text-xs text-muted-foreground">Total Cost</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
-                <div className={`text-2xl font-bold ${summary.profit < 0 ? 'text-red-500' : 'text-green-500'}`}>
-                  {formatCurrency(summary.profit)}
+                <div className={`text-2xl font-bold ${summary.actualProfit < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                  {formatCurrency(summary.actualProfit)}
                 </div>
                 <p className="text-xs text-muted-foreground">Profit/Loss</p>
               </CardContent>
@@ -140,18 +140,18 @@ const FinancialReport: React.FC = () => {
                     data={[
                       {
                         name: "Revenue",
-                        planned: summary.plannedRevenue,
-                        actual: summary.actualRevenue,
+                        planned: summary.totalPlannedRevenue,
+                        actual: summary.totalActualRevenue,
                       },
                       {
                         name: "Cost",
-                        planned: summary.plannedCost,
-                        actual: summary.actualCost,
+                        planned: summary.totalPlannedCost,
+                        actual: summary.totalActualCost,
                       },
                       {
                         name: "Profit",
                         planned: summary.plannedProfit,
-                        actual: summary.profit,
+                        actual: summary.actualProfit,
                       },
                     ]}
                     margin={{

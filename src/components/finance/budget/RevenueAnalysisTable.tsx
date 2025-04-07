@@ -1,9 +1,10 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
+import { Plus, Download, Filter } from "lucide-react";
 import { RevenueItem } from "./types";
 
 export interface RevenueAnalysisTableProps {
@@ -27,8 +28,18 @@ const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
 }) => {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Revenue Analysis</CardTitle>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="hidden md:flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            Advanced Filters
+          </Button>
+          <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            Export Data
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {filteredRevenues.length > 0 ? (
@@ -40,6 +51,9 @@ const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
                 <TableHead className="text-right">Planned (€)</TableHead>
                 <TableHead className="text-right">Actual (€)</TableHead>
                 <TableHead className="text-right">Variance (€)</TableHead>
+                {filteredRevenues.some(item => item.vatPercent) && (
+                  <TableHead className="text-right">VAT %</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -47,6 +61,11 @@ const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
                 <TableRow key={item.id}>
                   <TableCell>
                     <Badge variant="outline">{item.category}</Badge>
+                    {item.subcategory && (
+                      <Badge variant="secondary" className="ml-2">
+                        {item.subcategory}
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell>{item.description}</TableCell>
                   <TableCell className="text-right">{formatCurrency(item.planned)}</TableCell>
@@ -54,6 +73,11 @@ const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
                   <TableCell className={`text-right ${getVarianceClass(item.variance)}`}>
                     {formatCurrency(item.variance)}
                   </TableCell>
+                  {filteredRevenues.some(item => item.vatPercent) && (
+                    <TableCell className="text-right">
+                      {item.vatPercent ? `${item.vatPercent}%` : '-'}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
               <TableRow className="font-medium">
@@ -62,6 +86,7 @@ const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
                 <TableCell className={`text-right ${getVarianceClass(totalRevenueVariance)}`}>
                   {formatCurrency(totalRevenueVariance)}
                 </TableCell>
+                {filteredRevenues.some(item => item.vatPercent) && <TableCell />}
               </TableRow>
             </TableBody>
           </Table>
