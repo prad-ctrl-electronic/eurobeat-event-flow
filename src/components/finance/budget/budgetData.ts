@@ -1,3 +1,4 @@
+
 import { v4 as uuidv4 } from 'uuid';
 
 export interface CostItem {
@@ -570,3 +571,87 @@ export const revenueData: RevenueItem[] = [
 ];
 
 // Add event field to other items in revenueData
+
+// Export the arrays with their proper names
+export const budgetData = costsData;
+
+// Add the missing utility functions that are being imported by other components
+export const getUniqueCategories = (): string[] => {
+  const categories = new Set<string>();
+  
+  budgetData.forEach(item => {
+    categories.add(item.category);
+  });
+  
+  revenueData.forEach(item => {
+    categories.add(item.category);
+  });
+  
+  return Array.from(categories);
+};
+
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount);
+};
+
+export const getVarianceClass = (variance: number): string => {
+  if (variance > 0) {
+    return 'text-green-500';
+  } else if (variance < 0) {
+    return 'text-red-500';
+  }
+  return '';
+};
+
+export const calculateSummary = (eventId?: string) => {
+  // Filter data based on eventId if provided
+  const filteredCosts = eventId 
+    ? budgetData.filter(item => item.event === eventId)
+    : budgetData;
+    
+  const filteredRevenue = eventId 
+    ? revenueData.filter(item => item.event === eventId)
+    : revenueData;
+
+  // Calculate totals
+  const totalPlannedCost = filteredCosts.reduce((sum, item) => sum + item.planned, 0);
+  const totalActualCost = filteredCosts.reduce((sum, item) => sum + item.actual, 0);
+  const totalCostVariance = filteredCosts.reduce((sum, item) => sum + item.variance, 0);
+  
+  const totalPlannedRevenue = filteredRevenue.reduce((sum, item) => sum + item.planned, 0);
+  const totalActualRevenue = filteredRevenue.reduce((sum, item) => sum + item.actual, 0);
+  const totalRevenueVariance = filteredRevenue.reduce((sum, item) => sum + item.variance, 0);
+  
+  // Calculate profit figures
+  const plannedProfit = totalPlannedRevenue - totalPlannedCost;
+  const actualProfit = totalActualRevenue - totalActualCost;
+  const profitVariance = actualProfit - plannedProfit;
+  
+  // Calculate profit margins
+  const profitMarginPlanned = totalPlannedRevenue !== 0 
+    ? ((plannedProfit / totalPlannedRevenue) * 100).toFixed(2)
+    : "0.00";
+    
+  const profitMarginActual = totalActualRevenue !== 0 
+    ? ((actualProfit / totalActualRevenue) * 100).toFixed(2)
+    : "0.00";
+
+  return {
+    totalPlannedCost,
+    totalActualCost,
+    totalCostVariance,
+    totalPlannedRevenue,
+    totalActualRevenue,
+    totalRevenueVariance,
+    plannedProfit,
+    actualProfit,
+    profitVariance,
+    profitMarginPlanned,
+    profitMarginActual
+  };
+};

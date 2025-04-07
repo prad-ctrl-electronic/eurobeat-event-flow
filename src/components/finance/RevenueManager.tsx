@@ -1,642 +1,397 @@
-
 import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useForm } from "react-hook-form";
-import { Calendar, Euro, Plus, Tag, Ticket, Wallet } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Plus, FileDown, Edit, Trash, Printer } from "lucide-react";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import VATCalculator from "./VATCalculator";
-import { useEvent } from "@/contexts/EventContext";
-import { ActionButtonDropdown } from "@/components/ui/action-button-dropdown";
 
-type Revenue = {
-  id: string;
-  event: string;
-  category: string;
-  description: string;
-  netAmount: number;
-  vatRate: string;
-  vatAmount: number;
-  grossAmount: number;
-  date: string;
-  ticketsSold?: number;
-  ticketPrice?: number;
-  paymentMethod: string;
-  referenceNumber: string;
-  status: string;
-};
-
-type EventOption = {
-  id: string;
-  name: string;
-  date: string;
-};
-
-// VAT rate options
-export const vatRateOptions = [
-  { value: "0", label: "0%" },
-  { value: "5", label: "5%" },
-  { value: "8", label: "8%" },
-  { value: "23", label: "23%" }
-];
-
-// Status options
-export const revenueStatusOptions = [
-  { value: "Already paid", label: "Already paid" },
-  { value: "Unpaid", label: "Unpaid" },
-  { value: "Processing", label: "Processing" },
-  { value: "Cancelled", label: "Cancelled" },
-];
-
-// Sample revenue categories
+// Add mock data if needed
 const revenueCategories = [
   "Ticket Sales",
-  "Food & Beverage",
   "Merchandise",
-  "Sponsorship",
-  "VIP Packages",
-  "Livestream Access",
-  "Vendor Fees",
+  "Food & Beverage",
+  "Sponsorships",
+  "Advertising",
   "Donations",
-  "Workshop Fees",
   "Other",
 ];
 
-const RevenueManager = () => {
-  const { toast } = useToast();
-  const [revenues, setRevenues] = useState<Revenue[]>([]);
-  const [activeTab, setActiveTab] = useState("add");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const { selectedEventId, events } = useEvent();
-  
-  // VAT calculator state
-  const [netAmount, setNetAmount] = useState("");
-  const [vatRate, setVatRate] = useState("23"); // Default to 23%
-  const [grossAmount, setGrossAmount] = useState("");
-  const [editingRevenueId, setEditingRevenueId] = useState<string | null>(null);
+const mockRevenueItems = [
+  {
+    id: "1",
+    date: "2024-04-01",
+    category: "Ticket Sales",
+    description: "General admission tickets",
+    netAmount: 10000,
+    vatPercent: 23,
+    grossAmount: 12300,
+    status: "Received",
+    notes: "Online sales via ticketing platform",
+  },
+  {
+    id: "2",
+    date: "2024-04-05",
+    category: "Sponsorships",
+    description: "Main event sponsor",
+    netAmount: 5000,
+    vatPercent: 23,
+    grossAmount: 6150,
+    status: "Pending",
+    notes: "Contract signed, invoice sent",
+  },
+  {
+    id: "3",
+    date: "2024-04-10",
+    category: "Merchandise",
+    description: "T-shirts and posters",
+    netAmount: 2500,
+    vatPercent: 23,
+    grossAmount: 3075,
+    status: "Received",
+    notes: "Sales during event",
+  },
+];
 
-  const form = useForm<Omit<Revenue, "id" | "vatAmount" | "grossAmount">>({
-    defaultValues: {
-      event: selectedEventId !== "all" ? selectedEventId : "",
-      category: "",
-      description: "",
-      netAmount: 0,
-      vatRate: "23",
-      date: new Date().toISOString().split("T")[0],
-      paymentMethod: "",
-      referenceNumber: "",
-      status: "Unpaid",
-    },
-  });
+const RevenueManager: React.FC = () => {
+  const [newRevenueOpen, setNewRevenueOpen] = useState(false);
+  const [editRevenueOpen, setEditRevenueOpen] = useState(false);
+  const [selectedRevenue, setSelectedRevenue] = useState<any>(null);
+  const [revenueItems, setRevenueItems] = useState(mockRevenueItems);
 
-  // Update form default event when selectedEventId changes
-  React.useEffect(() => {
-    if (selectedEventId !== "all") {
-      form.setValue("event", selectedEventId);
-    }
-  }, [selectedEventId, form]);
-
-  const handleSubmit = form.handleSubmit((data) => {
-    // Calculate VAT amount and gross amount
-    const netAmountValue = Number(data.netAmount);
-    const vatRateValue = Number(data.vatRate);
-    const vatAmount = netAmountValue * (vatRateValue / 100);
-    const grossAmount = netAmountValue + vatAmount;
-
-    const newRevenue: Revenue = {
-      id: `rev-${Date.now()}`,
-      ...data,
-      netAmount: netAmountValue,
-      vatAmount: vatAmount,
-      grossAmount: grossAmount,
-    };
-
-    setRevenues([...revenues, newRevenue]);
-    toast({
-      title: "Revenue Added",
-      description: `€${newRevenue.grossAmount.toFixed(2)} has been recorded for ${newRevenue.description}`,
-    });
-
-    // Reset the form
-    form.reset({
-      event: selectedEventId !== "all" ? selectedEventId : "",
-      category: "",
-      description: "",
-      netAmount: 0,
-      vatRate: "23",
-      date: new Date().toISOString().split("T")[0],
-      ticketsSold: undefined,
-      ticketPrice: undefined,
-      paymentMethod: "",
-      referenceNumber: "",
-      status: "Unpaid",
-    });
-
-    // Reset VAT calculator
-    setNetAmount("");
-    setVatRate("23");
-    setGrossAmount("");
-  });
-
-  const calculateTotal = (field: 'netAmount' | 'grossAmount' | 'vatAmount', category?: string) => {
-    const filteredRevenues = selectedEventId === "all" 
-      ? revenues 
-      : revenues.filter(rev => rev.event === selectedEventId);
-      
-    if (category) {
-      return filteredRevenues
-        .filter((rev) => rev.category === category)
-        .reduce((sum, rev) => sum + rev[field], 0);
-    }
-    return filteredRevenues.reduce((sum, rev) => sum + rev[field], 0);
-  };
-
-  const getEventName = (eventId: string) => {
-    const event = events.find((e) => e.id === eventId);
-    return event ? event.name : eventId;
-  };
-
-  const handleStatusChange = (id: string, newStatus: string) => {
-    const updatedRevenues = revenues.map(rev => 
-      rev.id === id ? { ...rev, status: newStatus } : rev
+  // Function to handle form submission (for new or edited revenue items)
+  const handleRevenueSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Logic to add or update revenue item
+    toast.success(
+      selectedRevenue ? "Revenue item updated!" : "Revenue item added!"
     );
-    setRevenues(updatedRevenues);
-    toast({
-      title: "Status Updated",
-      description: `Revenue status changed to ${newStatus}`,
-    });
+    setNewRevenueOpen(false);
+    setEditRevenueOpen(false);
   };
 
-  const handleVatRateChange = (id: string, newVatRate: string) => {
-    const updatedRevenues = revenues.map(rev => {
-      if (rev.id === id) {
-        const vatRateValue = Number(newVatRate);
-        const vatAmount = rev.netAmount * (vatRateValue / 100);
-        const grossAmount = rev.netAmount + vatAmount;
-        
-        return {
-          ...rev,
-          vatRate: newVatRate,
-          vatAmount,
-          grossAmount
-        };
-      }
-      return rev;
-    });
-    
-    setRevenues(updatedRevenues);
-    toast({
-      title: "VAT Rate Updated",
-      description: `VAT rate changed to ${newVatRate}%`,
-    });
+  // Function to open edit dialog
+  const handleEditRevenue = (item: any) => {
+    setSelectedRevenue(item);
+    setEditRevenueOpen(true);
   };
 
-  // Filter revenues by selected event
-  const filteredRevenues = selectedEventId === "all" 
-    ? revenues 
-    : revenues.filter(rev => rev.event === selectedEventId);
+  // Function to delete revenue item
+  const handleDeleteRevenue = (id: string) => {
+    // Logic to delete revenue item
+    setRevenueItems(revenueItems.filter((item) => item.id !== id));
+    toast.success("Revenue item deleted!");
+  };
 
   return (
-    <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-muted/40 mb-4">
-          <TabsTrigger value="add">Add Revenue</TabsTrigger>
-          <TabsTrigger value="list">Revenue List</TabsTrigger>
-          <TabsTrigger value="summary">Revenue Summary</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="add">
-          <Card className="card-gradient">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Wallet className="h-5 w-5" />
-                Add New Revenue
-              </CardTitle>
-              <CardDescription>Record a new revenue entry</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="event"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Related Event</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select event" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {events.filter(e => e.id !== "all").map((event) => (
-                                <SelectItem key={event.id} value={event.id}>
-                                  {event.name} ({event.date})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Revenue Category</FormLabel>
-                          <Select
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              setSelectedCategory(value);
-                            }}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select category" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {revenueCategories.map((category) => (
-                                <SelectItem key={category} value={category}>
-                                  {category}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
+    <div className="space-y-4">
+      <div className="flex flex-col md:flex-row justify-between gap-4">
+        <h2 className="text-2xl font-semibold">Revenue Manager</h2>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" className="flex items-center gap-2">
+            <FileDown className="h-4 w-4" /> Export
+          </Button>
+          <Button variant="outline" className="flex items-center gap-2">
+            <Printer className="h-4 w-4" /> Print
+          </Button>
+          <Button
+            className="flex items-center gap-2"
+            onClick={() => setNewRevenueOpen(true)}
+          >
+            <Plus className="h-4 w-4" /> Add Revenue
+          </Button>
+        </div>
+      </div>
 
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="Brief description of revenue" />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="date"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Date Received</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                              <Input type="date" {...field} className="pl-9" />
-                            </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="col-span-2">
-                      <Label>Amount</Label>
-                      <VATCalculator 
-                        netAmount={netAmount}
-                        setNetAmount={(value) => {
-                          setNetAmount(value);
-                          form.setValue("netAmount", parseFloat(value.replace(/,/g, "")) || 0);
-                        }}
-                        vatRate={vatRate}
-                        setVatRate={(value) => {
-                          setVatRate(value);
-                          form.setValue("vatRate", value);
-                        }}
-                        grossAmount={grossAmount}
-                        setGrossAmount={setGrossAmount}
-                      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Revenue Items</CardTitle>
+          <CardDescription>Manage all revenue streams</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead className="text-right">Net Amount</TableHead>
+                <TableHead className="text-right">VAT %</TableHead>
+                <TableHead className="text-right">Gross Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {revenueItems.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.date}</TableCell>
+                  <TableCell>{item.category}</TableCell>
+                  <TableCell>{item.description}</TableCell>
+                  <TableCell className="text-right">
+                    ${item.netAmount.toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-right">{item.vatPercent}%</TableCell>
+                  <TableCell className="text-right">
+                    ${item.grossAmount.toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        item.status === "Received"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleEditRevenue(item)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                        onClick={() => handleDeleteRevenue(item.id)}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
                     </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-                    {selectedCategory === "Ticket Sales" && (
-                      <>
-                        <FormField
-                          control={form.control}
-                          name="ticketsSold"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Tickets Sold</FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Ticket className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                  <Input 
-                                    type="number" 
-                                    min="0" 
-                                    {...field} 
-                                    placeholder="0" 
-                                    className="pl-9"
-                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                  />
-                                </div>
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="ticketPrice"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Ticket Price (€)</FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Tag className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                  <Input 
-                                    type="number" 
-                                    step="0.01" 
-                                    min="0" 
-                                    {...field} 
-                                    placeholder="0.00" 
-                                    className="pl-9"
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                  />
-                                </div>
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </>
-                    )}
-
-                    <FormField
-                      control={form.control}
-                      name="paymentMethod"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Payment Method</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select payment method" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                              <SelectItem value="credit_card">Credit Card</SelectItem>
-                              <SelectItem value="paypal">PayPal</SelectItem>
-                              <SelectItem value="cash">Cash</SelectItem>
-                              <SelectItem value="check">Check</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="status"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Status</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {revenueStatusOptions.map(option => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="referenceNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Reference Number</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="e.g. Transaction ID, Invoice Number" />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="flex justify-end mt-6">
-                    <Button type="submit" className="gap-2">
-                      <Plus className="h-4 w-4" /> Add Revenue
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="list">
-          <Card className="card-gradient">
-            <CardHeader>
-              <CardTitle>Revenue Entries</CardTitle>
-              <CardDescription>All recorded revenue transactions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {filteredRevenues.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-3 px-2">Date</th>
-                        <th className="text-left py-3 px-2">Event</th>
-                        <th className="text-left py-3 px-2">Category</th>
-                        <th className="text-left py-3 px-2">Description</th>
-                        <th className="text-right py-3 px-2">Net Amount</th>
-                        <th className="text-right py-3 px-2">VAT %</th>
-                        <th className="text-right py-3 px-2">VAT Amount</th>
-                        <th className="text-right py-3 px-2">Gross Amount</th>
-                        <th className="text-center py-3 px-2">Status</th>
-                        {filteredRevenues.some(r => r.category === "Ticket Sales") && (
-                          <>
-                            <th className="text-right py-3 px-2">Tickets</th>
-                            <th className="text-right py-3 px-2">Ticket Price</th>
-                          </>
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredRevenues.map((revenue) => (
-                        <tr key={revenue.id} className="border-b border-muted/20 hover:bg-muted/5">
-                          <td className="py-3 px-2">{revenue.date}</td>
-                          <td className="py-3 px-2">{getEventName(revenue.event)}</td>
-                          <td className="py-3 px-2">{revenue.category}</td>
-                          <td className="py-3 px-2">{revenue.description}</td>
-                          <td className="py-3 px-2 text-right">€{revenue.netAmount.toFixed(2)}</td>
-                          <td className="py-3 px-2 text-right">
-                            <ActionButtonDropdown
-                              value={revenue.vatRate}
-                              options={vatRateOptions}
-                              onValueChange={(value) => handleVatRateChange(revenue.id, value)}
-                              isEditing={true}
-                              showActions={false}
-                              autoSave={true}
-                              className="min-w-[80px]"
-                            />
-                          </td>
-                          <td className="py-3 px-2 text-right">€{revenue.vatAmount.toFixed(2)}</td>
-                          <td className="py-3 px-2 text-right">€{revenue.grossAmount.toFixed(2)}</td>
-                          <td className="py-3 px-2 text-center">
-                            <ActionButtonDropdown
-                              value={revenue.status}
-                              options={revenueStatusOptions}
-                              onValueChange={(value) => handleStatusChange(revenue.id, value)}
-                              isEditing={true}
-                              showActions={false}
-                              autoSave={true}
-                              className="min-w-[120px]"
-                            />
-                          </td>
-                          {filteredRevenues.some(r => r.category === "Ticket Sales") && (
-                            <>
-                              <td className="py-3 px-2 text-right">{revenue.ticketsSold || "-"}</td>
-                              <td className="py-3 px-2 text-right">
-                                {revenue.ticketPrice ? `€${revenue.ticketPrice.toFixed(2)}` : "-"}
-                              </td>
-                            </>
-                          )}
-                        </tr>
-                      ))}
-                      <tr className="font-medium bg-muted/10">
-                        <td colSpan={4} className="py-3 px-2 text-right">Totals:</td>
-                        <td className="py-3 px-2 text-right">€{calculateTotal('netAmount').toFixed(2)}</td>
-                        <td className="py-3 px-2 text-right"></td>
-                        <td className="py-3 px-2 text-right">€{calculateTotal('vatAmount').toFixed(2)}</td>
-                        <td className="py-3 px-2 text-right">€{calculateTotal('grossAmount').toFixed(2)}</td>
-                        <td colSpan={filteredRevenues.some(r => r.category === "Ticket Sales") ? 3 : 1}></td>
-                      </tr>
-                    </tbody>
-                  </table>
+      {/* New Revenue Dialog */}
+      <Dialog open={newRevenueOpen} onOpenChange={setNewRevenueOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Add New Revenue</DialogTitle>
+            <DialogDescription>
+              Enter the details for the new revenue item.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleRevenueSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="date">Date</Label>
+                  <Input id="date" type="date" required />
                 </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No revenue entries have been added yet.
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="received">Received</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="summary">
-          <Card className="card-gradient">
-            <CardHeader>
-              <CardTitle>Revenue Summary</CardTitle>
-              <CardDescription>Overview of revenue by category</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {filteredRevenues.length > 0 ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {revenueCategories
-                      .filter(category => 
-                        filteredRevenues.some(rev => rev.category === category)
-                      )
-                      .map(category => {
-                        const categoryTotal = calculateTotal('grossAmount', category);
-                        const categoryPercentage = (categoryTotal / calculateTotal('grossAmount')) * 100;
-                        
-                        return (
-                          <Card key={category} className="bg-card/50">
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-base font-medium">{category}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="text-2xl font-bold">€{categoryTotal.toFixed(2)}</div>
-                              <div className="text-xs text-muted-foreground mt-1">
-                                {categoryPercentage.toFixed(1)}% of total revenue
-                              </div>
-                              <div className="w-full bg-muted h-2 mt-2 rounded-full overflow-hidden">
-                                <div 
-                                  className="bg-primary h-2 rounded-full" 
-                                  style={{ width: `${categoryPercentage}%` }}
-                                />
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })
-                    }
-                  </div>
-                  
-                  <Card className="bg-primary/5 border-primary/20">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="flex items-center gap-2">
-                        <Wallet className="h-5 w-5" />
-                        Total Revenue
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <div className="text-sm text-muted-foreground mb-1">Net Revenue</div>
-                        <div className="text-2xl font-bold">€{calculateTotal('netAmount').toFixed(2)}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-muted-foreground mb-1">VAT</div>
-                        <div className="text-2xl font-bold">€{calculateTotal('vatAmount').toFixed(2)}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-muted-foreground mb-1">Gross Revenue</div>
-                        <div className="text-3xl font-bold">€{calculateTotal('grossAmount').toFixed(2)}</div>
-                        <div className="text-sm text-muted-foreground mt-1">
-                          Across {filteredRevenues.length} transactions
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {revenueCategories.map((category) => (
+                      <SelectItem key={category} value={category.toLowerCase()}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Input id="description" required />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="netAmount">Net Amount</Label>
+                  <Input id="netAmount" type="number" min="0" step="0.01" required />
                 </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No revenue data available for summary.
+                <div className="space-y-2">
+                  <Label htmlFor="vatPercent">VAT %</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select VAT %" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">0%</SelectItem>
+                      <SelectItem value="5">5%</SelectItem>
+                      <SelectItem value="8">8%</SelectItem>
+                      <SelectItem value="23">23%</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                <div className="space-y-2">
+                  <Label htmlFor="grossAmount">Gross Amount</Label>
+                  <Input id="grossAmount" type="number" min="0" step="0.01" disabled />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea id="notes" />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setNewRevenueOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Add Revenue</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Revenue Dialog */}
+      <Dialog open={editRevenueOpen} onOpenChange={setEditRevenueOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Edit Revenue Item</DialogTitle>
+            <DialogDescription>
+              Update the details for this revenue item.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleRevenueSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="date">Date</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    defaultValue={selectedRevenue?.date}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                    defaultValue={selectedRevenue?.status.toLowerCase()}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="received">Received</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select
+                  defaultValue={selectedRevenue?.category.toLowerCase()}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {revenueCategories.map((category) => (
+                      <SelectItem key={category} value={category.toLowerCase()}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Input
+                  id="description"
+                  defaultValue={selectedRevenue?.description}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="netAmount">Net Amount</Label>
+                  <Input
+                    id="netAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue={selectedRevenue?.netAmount}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vatPercent">VAT %</Label>
+                  <Select defaultValue={selectedRevenue?.vatPercent.toString()}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select VAT %" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">0%</SelectItem>
+                      <SelectItem value="5">5%</SelectItem>
+                      <SelectItem value="8">8%</SelectItem>
+                      <SelectItem value="23">23%</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="grossAmount">Gross Amount</Label>
+                  <Input
+                    id="grossAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue={selectedRevenue?.grossAmount}
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  defaultValue={selectedRevenue?.notes}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditRevenueOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">Update Revenue</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
