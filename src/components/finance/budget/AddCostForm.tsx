@@ -1,26 +1,93 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { CostItem } from "./budgetData";
+import { CostItem } from "./types";
+import { useEvent } from "@/contexts/EventContext";
+import { v4 as uuidv4 } from 'uuid';
 
 interface AddCostFormProps {
-  newCostItem: Partial<CostItem>;
-  handleCostChange: (field: keyof CostItem, value: any) => void;
-  submitCostItem: (e: React.FormEvent) => void;
-  onCancel: () => void;
+  onSave: (newCost: CostItem) => void;
+  onCancel?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const AddCostForm: React.FC<AddCostFormProps> = ({
-  newCostItem,
-  handleCostChange,
-  submitCostItem,
-  onCancel
+  onSave,
+  onCancel,
+  open,
+  onOpenChange
 }) => {
+  const { events, selectedEventId } = useEvent();
+  
+  const [newCostItem, setNewCostItem] = useState<Partial<CostItem>>({
+    category: "",
+    subcategory: "",
+    description: "",
+    event: selectedEventId,
+    planned: 0,
+    actual: 0,
+    variance: 0,
+    variancePercentage: 0,
+    notes: ""
+  });
+
+  const handleCostChange = (field: keyof CostItem, value: any) => {
+    setNewCostItem(prev => {
+      const updated = { ...prev, [field]: value };
+      
+      if (field === 'planned' || field === 'actual') {
+        const planned = field === 'planned' ? parseFloat(value) || 0 : parseFloat(String(prev.planned)) || 0;
+        const actual = field === 'actual' ? parseFloat(value) || 0 : parseFloat(String(prev.actual)) || 0;
+        updated.variance = planned - actual;
+        
+        if (planned !== 0) {
+          updated.variancePercentage = (updated.variance / planned) * 100;
+        } else {
+          updated.variancePercentage = 0;
+        }
+      }
+      
+      return updated;
+    });
+  };
+
+  const submitCostItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    const costItem: CostItem = {
+      id: uuidv4(),
+      category: newCostItem.category || "",
+      subcategory: newCostItem.subcategory || "",
+      description: newCostItem.description || "",
+      event: newCostItem.event || selectedEventId,
+      planned: Number(newCostItem.planned) || 0,
+      actual: Number(newCostItem.actual) || 0,
+      variance: Number(newCostItem.variance) || 0,
+      variancePercentage: Number(newCostItem.variancePercentage) || 0,
+      notes: newCostItem.notes || ""
+    };
+    
+    onSave(costItem);
+    
+    // Reset form after submission
+    setNewCostItem({
+      category: "",
+      subcategory: "",
+      description: "",
+      event: selectedEventId,
+      planned: 0,
+      actual: 0,
+      variance: 0,
+      variancePercentage: 0,
+      notes: ""
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -103,14 +170,17 @@ const AddCostForm: React.FC<AddCostFormProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="cost-related-event">Related Event</Label>
-              <Select>
+              <Select 
+                value={newCostItem.event || selectedEventId} 
+                onValueChange={(value) => handleCostChange('event', value)}
+              >
                 <SelectTrigger id="cost-related-event">
                   <SelectValue placeholder="Select event" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="techno-fusion">Techno Fusion Festival</SelectItem>
-                  <SelectItem value="bass-nation">Bass Nation</SelectItem>
-                  <SelectItem value="electronica">Electronica Showcase</SelectItem>
+                  {events.map(event => (
+                    <SelectItem key={event.id} value={event.id}>{event.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

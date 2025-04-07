@@ -1,73 +1,55 @@
 
 import React from "react";
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { FileDown, Printer } from "lucide-react";
+import { Download, Upload, Plus } from "lucide-react";
+import { useSelectedEventName } from "@/contexts/EventContext";
 
-interface BudgetAnalysisHeaderProps {
-  viewMode: string;
-  onViewModeChange: (value: string) => void;
-  onExport?: () => void;
+export interface BudgetAnalysisHeaderProps {
+  onAddCostClick: () => void;
+  onAddRevenueClick: () => void;
 }
 
-const BudgetAnalysisHeader = ({ 
-  viewMode, 
-  onViewModeChange,
-  onExport
-}: BudgetAnalysisHeaderProps) => {
-  return (
-    <div className="flex flex-col md:flex-row md:justify-between gap-4">
-      <TabsList className="flex-wrap">
-        <TabsTrigger 
-          value="costs"
-          onClick={() => onViewModeChange("costs")}
-          data-state={viewMode === "costs" ? "active" : "inactive"}
-        >
-          Cost Analysis
-        </TabsTrigger>
-        <TabsTrigger 
-          value="revenue"
-          onClick={() => onViewModeChange("revenue")}
-          data-state={viewMode === "revenue" ? "active" : "inactive"}
-        >
-          Revenue Analysis
-        </TabsTrigger>
-        <TabsTrigger 
-          value="summary"
-          onClick={() => onViewModeChange("summary")}
-          data-state={viewMode === "summary" ? "active" : "inactive"}
-        >
-          P&L Summary
-        </TabsTrigger>
-        <TabsTrigger 
-          value="add-cost"
-          onClick={() => onViewModeChange("add-cost")}
-          data-state={viewMode === "add-cost" ? "active" : "inactive"}
-        >
-          Add Cost Item
-        </TabsTrigger>
-        <TabsTrigger 
-          value="add-revenue"
-          onClick={() => onViewModeChange("add-revenue")}
-          data-state={viewMode === "add-revenue" ? "active" : "inactive"}
-        >
-          Add Revenue Item
-        </TabsTrigger>
-      </TabsList>
+const BudgetAnalysisHeader: React.FC<BudgetAnalysisHeaderProps> = ({ 
+  onAddCostClick, 
+  onAddRevenueClick 
+}) => {
+  const selectedEventName = useSelectedEventName();
 
-      <div className="flex items-center space-x-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex items-center gap-2"
-          onClick={onExport}
-        >
-          <FileDown className="h-4 w-4" />
+  return (
+    <div className="flex flex-col md:flex-row justify-between mb-6 gap-4 items-start md:items-center">
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight mb-1">Budget Analysis</h2>
+        <p className="text-muted-foreground">{selectedEventName} financial planning and tracking</p>
+      </div>
+      
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <Download className="h-4 w-4" />
           Export
         </Button>
+        
         <Button variant="outline" size="sm" className="flex items-center gap-2">
-          <Printer className="h-4 w-4" />
-          Print
+          <Upload className="h-4 w-4" />
+          Import
+        </Button>
+        
+        <Button
+          size="sm" 
+          className="flex items-center gap-2"
+          onClick={onAddCostClick}
+        >
+          <Plus className="h-4 w-4" />
+          Add Cost
+        </Button>
+        
+        <Button
+          size="sm" 
+          variant="secondary" 
+          className="flex items-center gap-2"
+          onClick={onAddRevenueClick}
+        >
+          <Plus className="h-4 w-4" />
+          Add Revenue
         </Button>
       </div>
     </div>

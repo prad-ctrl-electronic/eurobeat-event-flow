@@ -74,8 +74,8 @@ const BudgetAnalysis: React.FC = () => {
   return (
     <div className="space-y-6">
       <BudgetAnalysisHeader
-        onAddCost={() => setShowAddCostForm(true)}
-        onAddRevenue={() => setShowAddRevenueForm(true)}
+        onAddCostClick={() => setShowAddCostForm(true)}
+        onAddRevenueClick={() => setShowAddRevenueForm(true)}
       />
 
       <BudgetFilter 
@@ -145,16 +145,18 @@ const BudgetAnalysis: React.FC = () => {
       </Tabs>
 
       {/* Forms for adding new budget items */}
-      <AddCostForm
-        open={showAddCostForm}
-        onOpenChange={setShowAddCostForm}
-        onSave={handleAddCost}
-      />
-      <AddRevenueForm
-        open={showAddRevenueForm}
-        onOpenChange={setShowAddRevenueForm}
-        onSave={handleAddRevenue}
-      />
+      {showAddCostForm && (
+        <AddCostForm
+          onSave={handleAddCost}
+          onCancel={() => setShowAddCostForm(false)}
+        />
+      )}
+      {showAddRevenueForm && (
+        <AddRevenueForm
+          onSave={handleAddRevenue}
+          onCancel={() => setShowAddRevenueForm(false)}
+        />
+      )}
     </div>
   );
 };

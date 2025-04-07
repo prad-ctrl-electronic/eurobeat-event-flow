@@ -1,31 +1,101 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { RevenueItem } from "./budgetData";
+import { RevenueItem } from "./types";
+import { useEvent } from "@/contexts/EventContext";
+import { v4 as uuidv4 } from 'uuid';
 
 interface AddRevenueFormProps {
-  newRevenueItem: Partial<RevenueItem>;
-  handleRevenueChange: (field: keyof RevenueItem, value: any) => void;
-  submitRevenueItem: (e: React.FormEvent) => void;
-  onCancel: () => void;
+  onSave: (newRevenue: RevenueItem) => void;
+  onCancel?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const AddRevenueForm: React.FC<AddRevenueFormProps> = ({
-  newRevenueItem,
-  handleRevenueChange,
-  submitRevenueItem,
-  onCancel
+  onSave,
+  onCancel,
+  open,
+  onOpenChange
 }) => {
+  const { events, selectedEventId } = useEvent();
+  
+  const [newRevenueItem, setNewRevenueItem] = useState<Partial<RevenueItem>>({
+    category: "",
+    subcategory: "",
+    description: "",
+    event: selectedEventId,
+    planned: 0,
+    actual: 0,
+    variance: 0,
+    variancePercentage: 0,
+    notes: "",
+    vatPercent: 21
+  });
+
+  const handleRevenueChange = (field: keyof RevenueItem, value: any) => {
+    setNewRevenueItem(prev => {
+      const updated = { ...prev, [field]: value };
+      
+      if (field === 'planned' || field === 'actual') {
+        const planned = field === 'planned' ? parseFloat(value) || 0 : parseFloat(String(prev.planned)) || 0;
+        const actual = field === 'actual' ? parseFloat(value) || 0 : parseFloat(String(prev.actual)) || 0;
+        updated.variance = planned - actual;
+        
+        if (planned !== 0) {
+          updated.variancePercentage = (updated.variance / planned) * 100;
+        } else {
+          updated.variancePercentage = 0;
+        }
+      }
+      
+      return updated;
+    });
+  };
+
+  const submitRevenueItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    const revenueItem: RevenueItem = {
+      id: uuidv4(),
+      category: newRevenueItem.category || "",
+      subcategory: newRevenueItem.subcategory || "",
+      description: newRevenueItem.description || "",
+      event: newRevenueItem.event || selectedEventId,
+      planned: Number(newRevenueItem.planned) || 0,
+      actual: Number(newRevenueItem.actual) || 0,
+      variance: Number(newRevenueItem.variance) || 0,
+      variancePercentage: Number(newRevenueItem.variancePercentage) || 0,
+      notes: newRevenueItem.notes || "",
+      vatPercent: Number(newRevenueItem.vatPercent) || 21
+    };
+    
+    onSave(revenueItem);
+    
+    // Reset form after submission
+    setNewRevenueItem({
+      category: "",
+      subcategory: "",
+      description: "",
+      event: selectedEventId,
+      planned: 0,
+      actual: 0,
+      variance: 0,
+      variancePercentage: 0,
+      notes: "",
+      vatPercent: 21
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Add New Revenue Item</CardTitle>
-        <CardDescription>Enter details for a new revenue stream</CardDescription>
+        <CardDescription>Enter details for a new budget revenue item</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={submitRevenueItem} className="space-y-4">
@@ -41,11 +111,12 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Ticket Sales">Ticket Sales</SelectItem>
-                  <SelectItem value="Bar">Bar Sales</SelectItem>
-                  <SelectItem value="Merchandise">Merchandise</SelectItem>
+                  <SelectItem value="Tickets">Tickets</SelectItem>
                   <SelectItem value="Sponsorships">Sponsorships</SelectItem>
-                  <SelectItem value="Food">Food Sales</SelectItem>
+                  <SelectItem value="Merchandise">Merchandise</SelectItem>
+                  <SelectItem value="Concessions">Concessions</SelectItem>
+                  <SelectItem value="Advertising">Advertising</SelectItem>
+                  <SelectItem value="VIP Packages">VIP Packages</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
@@ -55,7 +126,7 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({
               <Label htmlFor="revenue-description">Description</Label>
               <Input 
                 id="revenue-description" 
-                placeholder="e.g. Pre-sale Tickets"
+                placeholder="e.g. Early Bird Tickets"
                 value={newRevenueItem.description}
                 onChange={(e) => handleRevenueChange('description', e.target.value)}
                 required
@@ -102,16 +173,31 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="revenue-related-event">Related Event</Label>
-              <Select>
+              <Select 
+                value={newRevenueItem.event || selectedEventId} 
+                onValueChange={(value) => handleRevenueChange('event', value)}
+              >
                 <SelectTrigger id="revenue-related-event">
                   <SelectValue placeholder="Select event" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="techno-fusion">Techno Fusion Festival</SelectItem>
-                  <SelectItem value="bass-nation">Bass Nation</SelectItem>
-                  <SelectItem value="electronica">Electronica Showcase</SelectItem>
+                  {events.map(event => (
+                    <SelectItem key={event.id} value={event.id}>{event.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="revenue-vat">VAT Percentage (%)</Label>
+              <Input 
+                id="revenue-vat"
+                type="number"
+                step="0.01"
+                placeholder="21"
+                value={newRevenueItem.vatPercent || ''}
+                onChange={(e) => handleRevenueChange('vatPercent', e.target.value)}
+              />
             </div>
 
             <div className="space-y-2 col-span-2">
