@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Euro, Plus, FileInput, Calculator, BarChart4 } from "lucide-react";
+import { Euro, Plus, FileInput, Calculator, BarChart4, Calendar, Tag, Wallet, Ticket } from "lucide-react";
 import InvoiceTable from "@/components/finance/InvoiceTable";
 import BudgetAnalysis from "@/components/finance/BudgetAnalysis";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import RevenueManager from "@/components/finance/RevenueManager";
 
 const Finance = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -175,9 +178,7 @@ const Finance = () => {
             </TabsContent>
             
             <TabsContent value="revenues">
-              <div className="grid-card min-h-[400px] flex items-center justify-center">
-                <p className="text-muted-foreground">Revenue management will appear here</p>
-              </div>
+              <RevenueManager />
             </TabsContent>
             
             <TabsContent value="invoices">
