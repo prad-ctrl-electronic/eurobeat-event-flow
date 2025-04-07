@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils"; // Adding the missing import for cn utility
 
 interface TaskFormProps {
   open: boolean;
