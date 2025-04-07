@@ -7,6 +7,7 @@ import RevenueChart from "@/components/dashboard/RevenueChart";
 import EventsList from "@/components/dashboard/EventsList";
 import FinancialTasks from "@/components/dashboard/FinancialTasks";
 import VendorOverview from "@/components/dashboard/VendorOverview";
+import StaffingWidget from "@/components/dashboard/StaffingWidget";
 import EventFilter from "@/components/EventFilter";
 import { useEvent } from "@/contexts/EventContext";
 
@@ -48,8 +49,9 @@ const DashboardPage = () => {
               <div className="lg:col-span-2">
                 <EventsList />
               </div>
-              <div>
+              <div className="space-y-6">
                 <VendorOverview />
+                <StaffingWidget />
               </div>
             </div>
           </div>

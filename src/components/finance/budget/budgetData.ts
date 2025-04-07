@@ -5,6 +5,9 @@ import { costsData, revenueData } from './budgetMockData';
 // Export the arrays with their proper names
 export { costsData, revenueData };
 
+// Export the types directly
+export type { CostItem, RevenueItem };
+
 // For backward compatibility
 export const budgetData = costsData;
 
