@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // Define the schema for the form
 const LoginSchema = z.object({
@@ -30,6 +30,7 @@ export function LoginForm() {
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(LoginSchema),
@@ -44,6 +45,8 @@ export function LoginForm() {
       setIsSubmitting(true);
       await login(data.email, data.password);
       toast.success("Login successful!");
+      // Redirect to dashboard immediately after successful login
+      navigate('/');
     } catch (error) {
       console.error("Login error:", error);
       

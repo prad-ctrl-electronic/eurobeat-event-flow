@@ -55,7 +55,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             <div className="h-8 w-8 rounded-md bg-primary-purple flex items-center justify-center animate-pulse-glow">
               <Music className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-semibold text-foreground">BeatFlow</span>
+            <span className="text-xl font-semibold text-foreground">exist.pl</span>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="lg:hidden">
             <ChevronLeft className="h-5 w-5" />
