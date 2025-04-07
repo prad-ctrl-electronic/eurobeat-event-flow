@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Table,
@@ -19,8 +18,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// Sample data from the CSV
-const invoiceData = [
+// Export the invoice data to be used in other components
+export const invoiceData = [
   {
     code: "05 - Teletech",
     supplier: "Project C AB",

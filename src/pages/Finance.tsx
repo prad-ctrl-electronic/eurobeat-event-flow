@@ -11,10 +11,16 @@ import RevenueManager from "@/components/finance/RevenueManager";
 import ExpensesTabContent from "@/components/finance/ExpensesTabContent";
 import MiscTabContent from "@/components/finance/MiscTabContent";
 import CompanyValuation from "@/components/finance/CompanyValuation";
+import LoansTabContent from "@/components/finance/LoansTabContent";
+import { invoiceData } from "@/components/finance/InvoiceTable";
+import { calculateInvoiceDebts } from "@/utils/debtUtils";
 
 const Finance = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("expenses");
+  
+  // Calculate invoice debts from the invoice data
+  const invoiceDebts = calculateInvoiceDebts(invoiceData);
 
   const handleShowAddExpense = () => {
     if (activeTab === "expenses") {
@@ -54,6 +60,7 @@ const Finance = () => {
               <TabsTrigger value="expenses">Expenses</TabsTrigger>
               <TabsTrigger value="revenues">Revenues</TabsTrigger>
               <TabsTrigger value="invoices">Invoices</TabsTrigger>
+              <TabsTrigger value="loans">Loans</TabsTrigger>
               <TabsTrigger value="budgeting">Budgeting</TabsTrigger>
               <TabsTrigger value="valuation">Company Valuation</TabsTrigger>
               <TabsTrigger value="taxes">Taxes</TabsTrigger>
@@ -71,6 +78,10 @@ const Finance = () => {
             
             <TabsContent value="invoices">
               <InvoiceTable />
+            </TabsContent>
+            
+            <TabsContent value="loans">
+              <LoansTabContent invoiceDebts={invoiceDebts} />
             </TabsContent>
             
             <TabsContent value="budgeting">

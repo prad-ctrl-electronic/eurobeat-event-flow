@@ -1,10 +1,20 @@
 
 import React from "react";
-import { ArrowUpRight, ArrowDownRight, EuroIcon, DollarSign, Percent } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, EuroIcon, DollarSign, Percent, BankIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { loansData } from "@/utils/debtUtils";
 
 const FinancialOverview = () => {
+  // Calculate total outstanding debt from loans
+  const outstandingDebt = loansData.reduce((sum, loan) => {
+    // Only include active loans
+    if (loan.status === "active") {
+      return sum + loan.outstandingAmount;
+    }
+    return sum;
+  }, 0);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card className="card-gradient">
@@ -29,13 +39,13 @@ const FinancialOverview = () => {
         <CardHeader className="pb-2">
           <CardDescription className="text-muted-foreground">Outstanding Debts</CardDescription>
           <CardTitle className="text-2xl flex items-center">
-            <EuroIcon className="mr-2 h-5 w-5 text-secondary-blue" />
-            24,350
+            <BankIcon className="mr-2 h-5 w-5 text-secondary-blue" />
+            {outstandingDebt.toLocaleString()}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Due within 30 days</span>
+            <span className="text-sm text-muted-foreground">Active loans: {loansData.filter(l => l.status === "active").length}</span>
             <span className="flex items-center text-rose-500">
               <ArrowDownRight className="h-4 w-4 mr-1" /> 3%
             </span>
