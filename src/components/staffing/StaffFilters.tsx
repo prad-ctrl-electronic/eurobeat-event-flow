@@ -79,7 +79,7 @@ const StaffFilters: React.FC<StaffFiltersProps> = ({ className = "" }) => {
             </div>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Departments</SelectItem>
+            <SelectItem value="all">All Departments</SelectItem>
             {departments.map((dept) => (
               <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
             ))}
@@ -91,7 +91,7 @@ const StaffFilters: React.FC<StaffFiltersProps> = ({ className = "" }) => {
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Status</SelectItem>
+            <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
@@ -103,7 +103,7 @@ const StaffFilters: React.FC<StaffFiltersProps> = ({ className = "" }) => {
             <SelectValue placeholder="Contract Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Contract Types</SelectItem>
+            <SelectItem value="all">All Contract Types</SelectItem>
             <SelectItem value="B2B">B2B</SelectItem>
             <SelectItem value="UoD">UoD</SelectItem>
             <SelectItem value="UoP">UoP</SelectItem>
