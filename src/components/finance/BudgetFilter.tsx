@@ -9,7 +9,7 @@ interface BudgetFilterProps {
   filterCategory: string;
   onSearchChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
-  categories: string[];
+  categories?: string[];
 }
 
 const BudgetFilter = ({ 
@@ -17,7 +17,7 @@ const BudgetFilter = ({
   filterCategory, 
   onSearchChange, 
   onCategoryChange,
-  categories
+  categories = [] // Provide default empty array
 }: BudgetFilterProps) => {
   return (
     <div className="flex flex-col md:flex-row gap-4 mt-4">
