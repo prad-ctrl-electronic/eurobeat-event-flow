@@ -1,0 +1,206 @@
+
+import React, { useState } from "react";
+import AppHeader from "@/components/AppHeader";
+import Sidebar from "@/components/Sidebar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { BadgePlus, Search, Users, Calendar, CircleDollarSign, FileText } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const staffMembers = [
+  {
+    id: 1,
+    name: "Alex Johnson",
+    role: "Event Manager",
+    email: "alex@beatflow.com",
+    initials: "AJ",
+    status: "active",
+    events: 8,
+    contract: "Full-time"
+  },
+  {
+    id: 2,
+    name: "Maria Gonzalez",
+    role: "Sound Engineer",
+    email: "maria@beatflow.com",
+    initials: "MG",
+    status: "active",
+    events: 12,
+    contract: "Freelance"
+  },
+  {
+    id: 3,
+    name: "Daniel Weber",
+    role: "Lighting Technician",
+    email: "daniel@beatflow.com",
+    initials: "DW",
+    status: "inactive",
+    events: 5,
+    contract: "Part-time"
+  },
+  {
+    id: 4,
+    name: "Sophie Klein",
+    role: "Marketing Specialist",
+    email: "sophie@beatflow.com",
+    initials: "SK",
+    status: "active",
+    events: 15,
+    contract: "Full-time"
+  }
+];
+
+const Staffing = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="lg:ml-64">
+        <AppHeader toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        
+        <main className="container mx-auto py-6 px-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <h1 className="text-3xl font-bold tracking-tight">Staffing</h1>
+            <div className="flex w-full sm:w-auto gap-2">
+              <div className="relative flex-1 sm:flex-initial">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search staff..." className="pl-9" />
+              </div>
+              <Button className="gap-2">
+                <BadgePlus className="h-4 w-4" /> Add Staff
+              </Button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+            <Card className="card-gradient">
+              <CardContent className="p-6 flex flex-col items-center text-center">
+                <div className="h-12 w-12 rounded-full bg-primary-purple/20 flex items-center justify-center mb-4">
+                  <Users className="h-6 w-6 text-primary-purple" />
+                </div>
+                <CardTitle className="text-2xl mb-1">24</CardTitle>
+                <CardDescription>Total Staff</CardDescription>
+              </CardContent>
+            </Card>
+            
+            <Card className="card-gradient">
+              <CardContent className="p-6 flex flex-col items-center text-center">
+                <div className="h-12 w-12 rounded-full bg-secondary-blue/20 flex items-center justify-center mb-4">
+                  <Calendar className="h-6 w-6 text-secondary-blue" />
+                </div>
+                <CardTitle className="text-2xl mb-1">18</CardTitle>
+                <CardDescription>Active This Month</CardDescription>
+              </CardContent>
+            </Card>
+            
+            <Card className="card-gradient">
+              <CardContent className="p-6 flex flex-col items-center text-center">
+                <div className="h-12 w-12 rounded-full bg-accent-pink/20 flex items-center justify-center mb-4">
+                  <CircleDollarSign className="h-6 w-6 text-accent-pink" />
+                </div>
+                <CardTitle className="text-2xl mb-1">€42,850</CardTitle>
+                <CardDescription>Monthly Payroll</CardDescription>
+              </CardContent>
+            </Card>
+            
+            <Card className="card-gradient">
+              <CardContent className="p-6 flex flex-col items-center text-center">
+                <div className="h-12 w-12 rounded-full bg-accent-teal/20 flex items-center justify-center mb-4">
+                  <FileText className="h-6 w-6 text-accent-teal" />
+                </div>
+                <CardTitle className="text-2xl mb-1">12</CardTitle>
+                <CardDescription>Pending Contracts</CardDescription>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <Tabs defaultValue="all" className="space-y-6">
+            <TabsList className="bg-muted/40 mb-4">
+              <TabsTrigger value="all">All Staff</TabsTrigger>
+              <TabsTrigger value="fulltime">Full-time</TabsTrigger>
+              <TabsTrigger value="freelance">Freelance</TabsTrigger>
+              <TabsTrigger value="parttime">Part-time</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="all">
+              <Card className="card-gradient">
+                <CardHeader>
+                  <CardTitle>Staff Directory</CardTitle>
+                  <CardDescription>Manage your team members</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {staffMembers.map((member) => (
+                      <div key={member.id} className="flex items-center justify-between p-4 border border-white/10 rounded-lg bg-muted/20">
+                        <div className="flex items-center gap-4">
+                          <Avatar className="h-10 w-10 border border-white/10">
+                            <AvatarFallback className="bg-primary-purple/20 text-primary-purple">
+                              {member.initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="font-medium">{member.name}</h3>
+                            <p className="text-sm text-muted-foreground">{member.role}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="hidden md:flex items-center gap-4">
+                          <div className="text-sm">
+                            <p className="text-muted-foreground">Email</p>
+                            <p className="font-medium">{member.email}</p>
+                          </div>
+                          
+                          <div className="text-sm">
+                            <p className="text-muted-foreground">Events</p>
+                            <p className="font-medium">{member.events}</p>
+                          </div>
+                          
+                          <div className="text-sm">
+                            <p className="text-muted-foreground">Contract</p>
+                            <p className="font-medium">{member.contract}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <Badge className={member.status === "active" ? "bg-emerald-500" : "bg-slate-500"}>
+                            {member.status === "active" ? "Active" : "Inactive"}
+                          </Badge>
+                          <Button variant="outline" size="sm">View</Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="fulltime">
+              <div className="grid-card min-h-[400px] flex items-center justify-center">
+                <p className="text-muted-foreground">Full-time staff will appear here</p>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="freelance">
+              <div className="grid-card min-h-[400px] flex items-center justify-center">
+                <p className="text-muted-foreground">Freelance staff will appear here</p>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="parttime">
+              <div className="grid-card min-h-[400px] flex items-center justify-center">
+                <p className="text-muted-foreground">Part-time staff will appear here</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default Staffing;
