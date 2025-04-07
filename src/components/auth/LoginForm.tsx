@@ -45,8 +45,13 @@ export function LoginForm() {
       setIsSubmitting(true);
       await login(data.email, data.password);
       toast.success("Login successful!");
-      // Redirect to dashboard immediately after successful login
-      navigate('/');
+      
+      // Force navigation to dashboard after successful login
+      console.log("Login successful, redirecting to dashboard...");
+      setTimeout(() => {
+        navigate('/');
+      }, 100);
+      
     } catch (error) {
       console.error("Login error:", error);
       
