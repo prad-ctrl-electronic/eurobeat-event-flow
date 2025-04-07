@@ -4,7 +4,7 @@ import AppHeader from "@/components/AppHeader";
 import Sidebar from "@/components/Sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Calculator, BarChart4, Plus } from "lucide-react";
+import { Calculator, BarChart4, Plus, CreditCard } from "lucide-react";
 import InvoiceTable from "@/components/finance/InvoiceTable";
 import BudgetAnalysis from "@/components/finance/BudgetAnalysis";
 import RevenueManager from "@/components/finance/RevenueManager";
@@ -14,10 +14,14 @@ import CompanyValuation from "@/components/finance/CompanyValuation";
 import LoansTabContent from "@/components/finance/LoansTabContent";
 import { invoiceData } from "@/components/finance/InvoiceTable";
 import { calculateInvoiceDebts } from "@/utils/debtUtils";
+import EventFilter from "@/components/EventFilter";
+import { useEvent } from "@/contexts/EventContext";
+import TaxesTabContent from "@/components/finance/TaxesTabContent";
 
 const Finance = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("expenses");
+  const { selectedEventId, setSelectedEventId } = useEvent();
   
   // Calculate invoice debts from the invoice data
   const invoiceDebts = calculateInvoiceDebts(invoiceData);
@@ -40,9 +44,16 @@ const Finance = () => {
         <AppHeader toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         
         <main className="container mx-auto py-6 px-4">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h1 className="text-3xl font-bold tracking-tight">Finance</h1>
-            <div className="flex gap-2">
+            
+            <EventFilter 
+              selectedEvent={selectedEventId}
+              onEventChange={setSelectedEventId}
+              className="w-full md:w-auto"
+            />
+            
+            <div className="flex flex-wrap gap-2 w-full md:w-auto">
               <Button variant="outline" className="gap-2">
                 <Calculator className="h-4 w-4" /> Tax Calculator
               </Button>
@@ -56,7 +67,7 @@ const Finance = () => {
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="bg-muted/40 mb-4">
+            <TabsList className="bg-muted/40 mb-4 flex-wrap">
               <TabsTrigger value="expenses">Expenses</TabsTrigger>
               <TabsTrigger value="revenues">Revenues</TabsTrigger>
               <TabsTrigger value="invoices">Invoices</TabsTrigger>
@@ -93,9 +104,7 @@ const Finance = () => {
             </TabsContent>
             
             <TabsContent value="taxes">
-              <div className="grid-card min-h-[400px] flex items-center justify-center">
-                <p className="text-muted-foreground">Tax calculations will appear here</p>
-              </div>
+              <TaxesTabContent />
             </TabsContent>
             
             <TabsContent value="profitloss">

@@ -19,6 +19,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ActionButtons } from "@/components/ui/action-buttons";
+import { ActionButtonDropdown } from "@/components/ui/action-button-dropdown";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -30,11 +31,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useEvent } from "@/contexts/EventContext";
+
+// Status options
+export const invoiceStatusOptions = [
+  { value: "Already paid", label: "Already paid" },
+  { value: "Unpaid", label: "Unpaid" },
+  { value: "Processing", label: "Processing" },
+  { value: "Cancelled", label: "Cancelled" },
+];
 
 // Export the invoice data to be used in other components
 export const invoiceData = [
   {
     code: "05 - Teletech",
+    event: "boiler-room",
     supplier: "Project C AB",
     invoiceNumber: "PCA/I24-000164",
     taxNumber: "",
@@ -50,12 +61,13 @@ export const invoiceData = [
     currency: "EUR",
     exchangeRate: "4.35",
     amountPLN: "2,610.00",
-    status: "Alredy paid",
+    status: "Already paid",
     paymentDate: "04/11/2024",
     comment: "Booking fee for the artist Nur Jaber"
   },
   {
     code: "05 - Teletech",
+    event: "tf-2025",
     supplier: "Sometimescreative GmbH",
     invoiceNumber: "RE2024015",
     taxNumber: "",
@@ -77,6 +89,7 @@ export const invoiceData = [
   },
   {
     code: "02 - Burn Warsaw",
+    event: "bn-2025",
     supplier: "DAREKRADIO Dariusz Przepióra",
     invoiceNumber: "953/10/2024",
     taxNumber: "",
@@ -98,6 +111,7 @@ export const invoiceData = [
   },
   {
     code: "02 - Burn Warsaw",
+    event: "es-2025",
     supplier: "Useme sp. z o.o.",
     invoiceNumber: "Pro forma UMZ6FJCJ",
     taxNumber: "",
@@ -113,12 +127,13 @@ export const invoiceData = [
     currency: "PLN",
     exchangeRate: "",
     amountPLN: "10,226.22",
-    status: "Already paid",
-    paymentDate: "07/11/2024",
+    status: "Unpaid",
+    paymentDate: "",
     comment: "Marketing / Copywriting i teksty Burn on Tour x Mixmag PR"
   },
   {
     code: "02 - Burn Warsaw",
+    event: "tf-2025",
     supplier: "MICHAŁ CYMERMAN",
     invoiceNumber: "Nr 4/10/2024",
     taxNumber: "",
@@ -140,6 +155,7 @@ export const invoiceData = [
   },
   {
     code: "04 - Boiler room Warsaw",
+    event: "boiler-room",
     supplier: "Luke Slater Productions Ltd.",
     invoiceNumber: "LSP-2024850",
     taxNumber: "",
@@ -155,14 +171,15 @@ export const invoiceData = [
     currency: "EUR",
     exchangeRate: "4.35",
     amountPLN: "28,275.00",
-    status: "Already paid",
-    paymentDate: "08/11/2024",
+    status: "Processing",
+    paymentDate: "",
     comment: "Artists payment"
   }
 ];
 
 interface Invoice {
   code: string;
+  event?: string;
   supplier: string;
   invoiceNumber: string;
   taxNumber: string;
@@ -191,24 +208,41 @@ const InvoiceTable: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editedValues, setEditedValues] = useState<Record<number, Invoice>>({});
+  const { selectedEventId } = useEvent();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
     
     if (term === "") {
-      setFilteredData(invoiceData);
+      filterInvoicesByEvent(selectedEventId);
     } else {
       const filtered = invoiceData.filter(
         (invoice) =>
-          invoice.supplier.toLowerCase().includes(term) ||
+          (invoice.supplier.toLowerCase().includes(term) ||
           invoice.invoiceNumber.toLowerCase().includes(term) ||
           invoice.comment.toLowerCase().includes(term) ||
-          invoice.code.toLowerCase().includes(term)
+          invoice.code.toLowerCase().includes(term)) &&
+          (selectedEventId === "all" || invoice.event === selectedEventId)
       );
       setFilteredData(filtered);
     }
   };
+
+  // Filter invoices by selected event
+  const filterInvoicesByEvent = (eventId: string) => {
+    if (eventId === "all") {
+      setFilteredData(invoiceData);
+    } else {
+      const filtered = invoiceData.filter(invoice => invoice.event === eventId);
+      setFilteredData(filtered);
+    }
+  };
+
+  // Update filter when selected event changes
+  React.useEffect(() => {
+    filterInvoicesByEvent(selectedEventId);
+  }, [selectedEventId]);
 
   const calculateTotal = () => {
     return filteredData
@@ -242,6 +276,25 @@ const InvoiceTable: React.FC = () => {
     });
   };
 
+  const handleStatusChange = (index: number, value: string) => {
+    setEditedValues({
+      ...editedValues,
+      [index]: {
+        ...editedValues[index],
+        status: value
+      }
+    });
+    
+    // Auto-save status changes
+    const updatedData = [...filteredData];
+    updatedData[index] = {
+      ...updatedData[index],
+      status: value
+    };
+    setFilteredData(updatedData);
+    toast.success(`Invoice status updated to "${value}"`);
+  };
+
   const handleSave = (index: number) => {
     // In a real app, this would save to a database
     toast.success(`Changes to invoice ${filteredData[index].invoiceNumber} saved successfully`);
@@ -271,11 +324,27 @@ const InvoiceTable: React.FC = () => {
     }
   };
 
+  // Get status color class based on status value
+  const getStatusColorClass = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'already paid':
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+      case 'unpaid':
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+      case 'processing':
+        return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
+      case 'cancelled':
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400";
+      default:
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+    }
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <div className="relative w-64">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-3 w-full md:w-auto">
+          <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search invoices..."
@@ -294,7 +363,7 @@ const InvoiceTable: React.FC = () => {
           </Button>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full md:w-auto justify-end">
           <Button variant="outline" size="sm" className="flex items-center gap-2">
             <FileDown className="h-4 w-4" />
             Export
@@ -417,16 +486,15 @@ const InvoiceTable: React.FC = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    {editingIndex === index ? (
-                      <Input 
-                        value={editedValues[index]?.status || invoice.status} 
-                        onChange={(e) => handleChange(index, 'status', e.target.value)}
-                      />
-                    ) : (
-                      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                        {invoice.status}
-                      </span>
-                    )}
+                    <ActionButtonDropdown
+                      value={editingIndex === index ? editedValues[index]?.status || invoice.status : invoice.status}
+                      options={invoiceStatusOptions}
+                      onValueChange={(value) => handleStatusChange(index, value)}
+                      isEditing={true}
+                      showActions={false}
+                      autoSave={true}
+                      className="min-w-[120px]"
+                    />
                   </TableCell>
                   <TableCell>
                     {editingIndex === index ? (

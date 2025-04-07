@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -51,7 +51,7 @@ const VATCalculator: React.FC<VATCalculatorProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="space-y-2">
         <Label htmlFor="amount">Net Amount</Label>
         <TooltipProvider>
@@ -88,9 +88,7 @@ const VATCalculator: React.FC<VATCalculatorProps> = ({
                   <SelectContent>
                     <SelectItem value="0">0%</SelectItem>
                     <SelectItem value="5">5%</SelectItem>
-                    <SelectItem value="7">7%</SelectItem>
-                    <SelectItem value="19">19%</SelectItem>
-                    <SelectItem value="21">21%</SelectItem>
+                    <SelectItem value="8">8%</SelectItem>
                     <SelectItem value="23">23%</SelectItem>
                   </SelectContent>
                 </Select>

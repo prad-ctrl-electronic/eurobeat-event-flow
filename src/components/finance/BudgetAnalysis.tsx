@@ -22,18 +22,22 @@ import {
   calculateSummary
 } from "./budget/budgetData";
 import { handleCostChange, handleRevenueChange } from "./budget/budgetFormUtils";
+import { useEvent } from "@/contexts/EventContext";
+import EventFilter from "@/components/EventFilter";
 
 const BudgetAnalysis: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [viewMode, setViewMode] = useState<"costs" | "revenue" | "summary" | "add-cost" | "add-revenue">("costs");
+  const { selectedEventId } = useEvent();
   
   const [newCostItem, setNewCostItem] = useState<Partial<CostItem>>({
     category: "",
     description: "",
     planned: 0,
     actual: 0,
-    notes: ""
+    notes: "",
+    event: selectedEventId !== "all" ? selectedEventId : ""
   });
   
   const [newRevenueItem, setNewRevenueItem] = useState<Partial<RevenueItem>>({
@@ -41,24 +45,37 @@ const BudgetAnalysis: React.FC = () => {
     description: "",
     planned: 0,
     actual: 0,
-    notes: ""
+    notes: "",
+    event: selectedEventId !== "all" ? selectedEventId : ""
   });
+
+  // Update new items event when selectedEventId changes
+  React.useEffect(() => {
+    if (selectedEventId !== "all") {
+      setNewCostItem(prev => ({ ...prev, event: selectedEventId }));
+      setNewRevenueItem(prev => ({ ...prev, event: selectedEventId }));
+    }
+  }, [selectedEventId]);
   
   const filteredCosts = budgetData.filter(
     (item) =>
       (filterCategory === "all" || item.category === filterCategory) &&
       (item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       item.category.toLowerCase().includes(searchTerm.toLowerCase()))
+       item.category.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (selectedEventId === "all" || item.event === selectedEventId)
   );
 
   const filteredRevenue = revenueData.filter(
     (item) =>
       (filterCategory === "all" || item.category === filterCategory) &&
       (item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       item.category.toLowerCase().includes(searchTerm.toLowerCase()))
+       item.category.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (selectedEventId === "all" || item.event === selectedEventId)
   );
 
-  const summary = calculateSummary();
+  const summary = calculateSummary(
+    selectedEventId === "all" ? undefined : selectedEventId
+  );
   const uniqueCategories = getUniqueCategories();
   
   const handleCostItemChange = (field: keyof CostItem, value: any) => {
@@ -79,7 +96,8 @@ const BudgetAnalysis: React.FC = () => {
       description: "",
       planned: 0,
       actual: 0,
-      notes: ""
+      notes: "",
+      event: selectedEventId !== "all" ? selectedEventId : ""
     });
   };
 
@@ -93,7 +111,8 @@ const BudgetAnalysis: React.FC = () => {
       description: "",
       planned: 0,
       actual: 0,
-      notes: ""
+      notes: "",
+      event: selectedEventId !== "all" ? selectedEventId : ""
     });
   };
 
@@ -109,21 +128,17 @@ const BudgetAnalysis: React.FC = () => {
             <TabsTrigger value="add-revenue">Add Revenue Item</TabsTrigger>
           </TabsList>
 
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <FileDown className="h-4 w-4" />
-              Export
-            </Button>
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <Printer className="h-4 w-4" />
-              Print
-            </Button>
-          </div>
+          <EventFilter 
+            selectedEvent={selectedEventId}
+            onEventChange={evt => {}}
+            className="w-full md:w-auto"
+            showAllOption={true}
+          />
         </div>
         
         {(viewMode === "costs" || viewMode === "revenue") && (
           <div className="flex flex-col md:flex-row gap-4 mt-4">
-            <div className="relative min-w-[200px]">
+            <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search items..."

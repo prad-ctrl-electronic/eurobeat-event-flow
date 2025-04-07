@@ -20,20 +20,27 @@ import {
 import { useForm } from "react-hook-form";
 import { Calendar, Euro, Plus, Tag, Ticket, Wallet } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import VATCalculator from "./VATCalculator";
+import { useEvent } from "@/contexts/EventContext";
+import { ActionButtonDropdown } from "@/components/ui/action-button-dropdown";
 
 type Revenue = {
   id: string;
   event: string;
   category: string;
   description: string;
-  amount: number;
+  netAmount: number;
+  vatRate: string;
+  vatAmount: number;
+  grossAmount: number;
   date: string;
   ticketsSold?: number;
   ticketPrice?: number;
   paymentMethod: string;
   referenceNumber: string;
+  status: string;
 };
 
 type EventOption = {
@@ -42,12 +49,20 @@ type EventOption = {
   date: string;
 };
 
-// Sample events data that would in real app come from an API or database
-const eventOptions: EventOption[] = [
-  { id: "tf-2025", name: "Techno Fusion Festival", date: "2025-06-15" },
-  { id: "bn-2025", name: "Bass Nation", date: "2025-07-22" },
-  { id: "es-2025", name: "Electronica Showcase", date: "2025-08-10" },
-  { id: "boiler-room", name: "Boiler Room Warsaw", date: "2024-11-30" },
+// VAT rate options
+export const vatRateOptions = [
+  { value: "0", label: "0%" },
+  { value: "5", label: "5%" },
+  { value: "8", label: "8%" },
+  { value: "23", label: "23%" }
+];
+
+// Status options
+export const revenueStatusOptions = [
+  { value: "Already paid", label: "Already paid" },
+  { value: "Unpaid", label: "Unpaid" },
+  { value: "Processing", label: "Processing" },
+  { value: "Cancelled", label: "Cancelled" },
 ];
 
 // Sample revenue categories
@@ -69,59 +84,134 @@ const RevenueManager = () => {
   const [revenues, setRevenues] = useState<Revenue[]>([]);
   const [activeTab, setActiveTab] = useState("add");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { selectedEventId, events } = useEvent();
+  
+  // VAT calculator state
+  const [netAmount, setNetAmount] = useState("");
+  const [vatRate, setVatRate] = useState("23"); // Default to 23%
+  const [grossAmount, setGrossAmount] = useState("");
+  const [editingRevenueId, setEditingRevenueId] = useState<string | null>(null);
 
-  const form = useForm<Omit<Revenue, "id">>({
+  const form = useForm<Omit<Revenue, "id" | "vatAmount" | "grossAmount">>({
     defaultValues: {
-      event: "",
+      event: selectedEventId !== "all" ? selectedEventId : "",
       category: "",
       description: "",
-      amount: 0,
+      netAmount: 0,
+      vatRate: "23",
       date: new Date().toISOString().split("T")[0],
       paymentMethod: "",
       referenceNumber: "",
+      status: "Unpaid",
     },
   });
 
+  // Update form default event when selectedEventId changes
+  React.useEffect(() => {
+    if (selectedEventId !== "all") {
+      form.setValue("event", selectedEventId);
+    }
+  }, [selectedEventId, form]);
+
   const handleSubmit = form.handleSubmit((data) => {
+    // Calculate VAT amount and gross amount
+    const netAmountValue = Number(data.netAmount);
+    const vatRateValue = Number(data.vatRate);
+    const vatAmount = netAmountValue * (vatRateValue / 100);
+    const grossAmount = netAmountValue + vatAmount;
+
     const newRevenue: Revenue = {
       id: `rev-${Date.now()}`,
       ...data,
-      amount: Number(data.amount),
+      netAmount: netAmountValue,
+      vatAmount: vatAmount,
+      grossAmount: grossAmount,
     };
 
     setRevenues([...revenues, newRevenue]);
     toast({
       title: "Revenue Added",
-      description: `€${newRevenue.amount.toFixed(2)} has been recorded for ${newRevenue.description}`,
+      description: `€${newRevenue.grossAmount.toFixed(2)} has been recorded for ${newRevenue.description}`,
     });
 
     // Reset the form
     form.reset({
-      event: "",
+      event: selectedEventId !== "all" ? selectedEventId : "",
       category: "",
       description: "",
-      amount: 0,
+      netAmount: 0,
+      vatRate: "23",
       date: new Date().toISOString().split("T")[0],
       ticketsSold: undefined,
       ticketPrice: undefined,
       paymentMethod: "",
       referenceNumber: "",
+      status: "Unpaid",
     });
+
+    // Reset VAT calculator
+    setNetAmount("");
+    setVatRate("23");
+    setGrossAmount("");
   });
 
-  const calculateTotal = (category?: string) => {
+  const calculateTotal = (field: 'netAmount' | 'grossAmount' | 'vatAmount', category?: string) => {
+    const filteredRevenues = selectedEventId === "all" 
+      ? revenues 
+      : revenues.filter(rev => rev.event === selectedEventId);
+      
     if (category) {
-      return revenues
+      return filteredRevenues
         .filter((rev) => rev.category === category)
-        .reduce((sum, rev) => sum + rev.amount, 0);
+        .reduce((sum, rev) => sum + rev[field], 0);
     }
-    return revenues.reduce((sum, rev) => sum + rev.amount, 0);
+    return filteredRevenues.reduce((sum, rev) => sum + rev[field], 0);
   };
 
   const getEventName = (eventId: string) => {
-    const event = eventOptions.find((e) => e.id === eventId);
+    const event = events.find((e) => e.id === eventId);
     return event ? event.name : eventId;
   };
+
+  const handleStatusChange = (id: string, newStatus: string) => {
+    const updatedRevenues = revenues.map(rev => 
+      rev.id === id ? { ...rev, status: newStatus } : rev
+    );
+    setRevenues(updatedRevenues);
+    toast({
+      title: "Status Updated",
+      description: `Revenue status changed to ${newStatus}`,
+    });
+  };
+
+  const handleVatRateChange = (id: string, newVatRate: string) => {
+    const updatedRevenues = revenues.map(rev => {
+      if (rev.id === id) {
+        const vatRateValue = Number(newVatRate);
+        const vatAmount = rev.netAmount * (vatRateValue / 100);
+        const grossAmount = rev.netAmount + vatAmount;
+        
+        return {
+          ...rev,
+          vatRate: newVatRate,
+          vatAmount,
+          grossAmount
+        };
+      }
+      return rev;
+    });
+    
+    setRevenues(updatedRevenues);
+    toast({
+      title: "VAT Rate Updated",
+      description: `VAT rate changed to ${newVatRate}%`,
+    });
+  };
+
+  // Filter revenues by selected event
+  const filteredRevenues = selectedEventId === "all" 
+    ? revenues 
+    : revenues.filter(rev => rev.event === selectedEventId);
 
   return (
     <div className="space-y-6">
@@ -153,7 +243,7 @@ const RevenueManager = () => {
                           <FormLabel>Related Event</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -161,7 +251,7 @@ const RevenueManager = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {eventOptions.map((event) => (
+                              {events.filter(e => e.id !== "all").map((event) => (
                                 <SelectItem key={event.id} value={event.id}>
                                   {event.name} ({event.date})
                                 </SelectItem>
@@ -183,7 +273,7 @@ const RevenueManager = () => {
                               field.onChange(value);
                               setSelectedCategory(value);
                             }}
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -230,30 +320,24 @@ const RevenueManager = () => {
                         </FormItem>
                       )}
                     />
-
-                    <FormField
-                      control={form.control}
-                      name="amount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Amount (€)</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Euro className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                              <Input 
-                                type="number" 
-                                step="0.01" 
-                                min="0" 
-                                {...field} 
-                                placeholder="0.00" 
-                                className="pl-9"
-                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                              />
-                            </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                    
+                    <div className="col-span-2">
+                      <Label>Amount</Label>
+                      <VATCalculator 
+                        netAmount={netAmount}
+                        setNetAmount={(value) => {
+                          setNetAmount(value);
+                          form.setValue("netAmount", parseFloat(value.replace(/,/g, "")) || 0);
+                        }}
+                        vatRate={vatRate}
+                        setVatRate={(value) => {
+                          setVatRate(value);
+                          form.setValue("vatRate", value);
+                        }}
+                        grossAmount={grossAmount}
+                        setGrossAmount={setGrossAmount}
+                      />
+                    </div>
 
                     {selectedCategory === "Ticket Sales" && (
                       <>
@@ -314,7 +398,7 @@ const RevenueManager = () => {
                           <FormLabel>Payment Method</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -328,6 +412,33 @@ const RevenueManager = () => {
                               <SelectItem value="cash">Cash</SelectItem>
                               <SelectItem value="check">Check</SelectItem>
                               <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Status</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {revenueStatusOptions.map(option => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </FormItem>
@@ -366,7 +477,7 @@ const RevenueManager = () => {
               <CardDescription>All recorded revenue transactions</CardDescription>
             </CardHeader>
             <CardContent>
-              {revenues.length > 0 ? (
+              {filteredRevenues.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -375,8 +486,12 @@ const RevenueManager = () => {
                         <th className="text-left py-3 px-2">Event</th>
                         <th className="text-left py-3 px-2">Category</th>
                         <th className="text-left py-3 px-2">Description</th>
-                        <th className="text-right py-3 px-2">Amount</th>
-                        {revenues.some(r => r.category === "Ticket Sales") && (
+                        <th className="text-right py-3 px-2">Net Amount</th>
+                        <th className="text-right py-3 px-2">VAT %</th>
+                        <th className="text-right py-3 px-2">VAT Amount</th>
+                        <th className="text-right py-3 px-2">Gross Amount</th>
+                        <th className="text-center py-3 px-2">Status</th>
+                        {filteredRevenues.some(r => r.category === "Ticket Sales") && (
                           <>
                             <th className="text-right py-3 px-2">Tickets</th>
                             <th className="text-right py-3 px-2">Ticket Price</th>
@@ -385,14 +500,38 @@ const RevenueManager = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {revenues.map((revenue) => (
+                      {filteredRevenues.map((revenue) => (
                         <tr key={revenue.id} className="border-b border-muted/20 hover:bg-muted/5">
                           <td className="py-3 px-2">{revenue.date}</td>
                           <td className="py-3 px-2">{getEventName(revenue.event)}</td>
                           <td className="py-3 px-2">{revenue.category}</td>
                           <td className="py-3 px-2">{revenue.description}</td>
-                          <td className="py-3 px-2 text-right">€{revenue.amount.toFixed(2)}</td>
-                          {revenues.some(r => r.category === "Ticket Sales") && (
+                          <td className="py-3 px-2 text-right">€{revenue.netAmount.toFixed(2)}</td>
+                          <td className="py-3 px-2 text-right">
+                            <ActionButtonDropdown
+                              value={revenue.vatRate}
+                              options={vatRateOptions}
+                              onValueChange={(value) => handleVatRateChange(revenue.id, value)}
+                              isEditing={true}
+                              showActions={false}
+                              autoSave={true}
+                              className="min-w-[80px]"
+                            />
+                          </td>
+                          <td className="py-3 px-2 text-right">€{revenue.vatAmount.toFixed(2)}</td>
+                          <td className="py-3 px-2 text-right">€{revenue.grossAmount.toFixed(2)}</td>
+                          <td className="py-3 px-2 text-center">
+                            <ActionButtonDropdown
+                              value={revenue.status}
+                              options={revenueStatusOptions}
+                              onValueChange={(value) => handleStatusChange(revenue.id, value)}
+                              isEditing={true}
+                              showActions={false}
+                              autoSave={true}
+                              className="min-w-[120px]"
+                            />
+                          </td>
+                          {filteredRevenues.some(r => r.category === "Ticket Sales") && (
                             <>
                               <td className="py-3 px-2 text-right">{revenue.ticketsSold || "-"}</td>
                               <td className="py-3 px-2 text-right">
@@ -403,9 +542,12 @@ const RevenueManager = () => {
                         </tr>
                       ))}
                       <tr className="font-medium bg-muted/10">
-                        <td colSpan={4} className="py-3 px-2 text-right">Total:</td>
-                        <td className="py-3 px-2 text-right">€{calculateTotal().toFixed(2)}</td>
-                        {revenues.some(r => r.category === "Ticket Sales") && <td colSpan={2}></td>}
+                        <td colSpan={4} className="py-3 px-2 text-right">Totals:</td>
+                        <td className="py-3 px-2 text-right">€{calculateTotal('netAmount').toFixed(2)}</td>
+                        <td className="py-3 px-2 text-right"></td>
+                        <td className="py-3 px-2 text-right">€{calculateTotal('vatAmount').toFixed(2)}</td>
+                        <td className="py-3 px-2 text-right">€{calculateTotal('grossAmount').toFixed(2)}</td>
+                        <td colSpan={filteredRevenues.some(r => r.category === "Ticket Sales") ? 3 : 1}></td>
                       </tr>
                     </tbody>
                   </table>
@@ -426,16 +568,16 @@ const RevenueManager = () => {
               <CardDescription>Overview of revenue by category</CardDescription>
             </CardHeader>
             <CardContent>
-              {revenues.length > 0 ? (
+              {filteredRevenues.length > 0 ? (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {revenueCategories
                       .filter(category => 
-                        revenues.some(rev => rev.category === category)
+                        filteredRevenues.some(rev => rev.category === category)
                       )
                       .map(category => {
-                        const categoryTotal = calculateTotal(category);
-                        const categoryPercentage = (categoryTotal / calculateTotal()) * 100;
+                        const categoryTotal = calculateTotal('grossAmount', category);
+                        const categoryPercentage = (categoryTotal / calculateTotal('grossAmount')) * 100;
                         
                         return (
                           <Card key={category} className="bg-card/50">
@@ -467,10 +609,21 @@ const RevenueManager = () => {
                         Total Revenue
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold">€{calculateTotal().toFixed(2)}</div>
-                      <div className="text-sm text-muted-foreground mt-1">
-                        Across {revenues.length} transactions
+                    <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <div className="text-sm text-muted-foreground mb-1">Net Revenue</div>
+                        <div className="text-2xl font-bold">€{calculateTotal('netAmount').toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground mb-1">VAT</div>
+                        <div className="text-2xl font-bold">€{calculateTotal('vatAmount').toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground mb-1">Gross Revenue</div>
+                        <div className="text-3xl font-bold">€{calculateTotal('grossAmount').toFixed(2)}</div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          Across {filteredRevenues.length} transactions
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
