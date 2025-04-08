@@ -10,11 +10,16 @@ import ExportDropdown from "@/components/common/ExportDropdown";
 import { useEvent } from "@/contexts/EventContext";
 import { exportData } from "@/utils/exportUtils";
 import { useStaffMemberOperations } from "@/contexts/StaffMembersContext";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { StaffMember } from "@/types/entities";
 
 const Staffing = () => {
   const [showAddStaffForm, setShowAddStaffForm] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedStaffMember, setSelectedStaffMember] = useState<StaffMember | null>(null);
   const { selectedEventId } = useEvent();
-  const { getActiveStaffMembers } = useStaffMemberOperations();
+  const { getActiveStaffMembers, deleteStaffMember } = useStaffMemberOperations();
   
   const handleExport = (format: "excel" | "pdf") => {
     // Export staff data using the context data
@@ -28,6 +33,20 @@ const Staffing = () => {
       includeHeaders: true
     });
   };
+
+  const handleDeleteStaffMember = (staffMember: StaffMember) => {
+    setSelectedStaffMember(staffMember);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedStaffMember) {
+      deleteStaffMember(selectedStaffMember.id);
+      toast.success(`Staff member ${selectedStaffMember.name} deleted successfully`);
+      setShowDeleteDialog(false);
+      setSelectedStaffMember(null);
+    }
+  };
   
   return (
     <PageLayout>
@@ -38,9 +57,27 @@ const Staffing = () => {
       
       <StaffMetrics className="mb-6" />
       <StaffFilters className="mb-6" />
-      <StaffingTabs />
+      <StaffingTabs onDeleteStaffMember={handleDeleteStaffMember} />
 
       <AddStaffForm open={showAddStaffForm} onOpenChange={setShowAddStaffForm} />
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the staff member
+              {selectedStaffMember ? ` "${selectedStaffMember.name}"` : ""}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageLayout>
   );
 };

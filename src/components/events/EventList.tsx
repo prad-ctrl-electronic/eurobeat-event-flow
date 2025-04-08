@@ -7,6 +7,17 @@ import { ActionButtons } from "@/components/ui/action-buttons";
 import { CalendarIcon, MapPin, Users, Clock, Euro } from "lucide-react";
 import { useEventOperations } from "@/contexts/EventsContext";
 import { Event } from "@/types/entities";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface EventListProps {
   onEdit: (eventId: number | string) => void;
@@ -14,9 +25,11 @@ interface EventListProps {
 }
 
 const EventList: React.FC<EventListProps> = ({ onEdit, onDelete }) => {
-  const { getActiveEvents, updateEvent } = useEventOperations();
+  const { getActiveEvents, updateEvent, deleteEvent } = useEventOperations();
   const [editingEvent, setEditingEvent] = useState<string | number | null>(null);
   const [editedValues, setEditedValues] = useState<Record<string, any>>({});
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState<string | number | null>(null);
   
   const events = getActiveEvents();
 
@@ -32,12 +45,25 @@ const EventList: React.FC<EventListProps> = ({ onEdit, onDelete }) => {
   const handleSave = (eventId: number | string) => {
     if (editedValues[eventId]) {
       updateEvent(eventId, editedValues[eventId]);
+      toast.success(`Event "${editedValues[eventId].name}" updated successfully`);
     }
     setEditingEvent(null);
   };
 
   const handleDelete = (eventId: number | string) => {
-    onDelete(eventId);
+    setSelectedEventId(eventId);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedEventId !== null) {
+      const eventToDelete = events.find(e => e.id === selectedEventId);
+      deleteEvent(selectedEventId);
+      toast.success(`Event "${eventToDelete?.name}" deleted successfully`);
+      setShowDeleteDialog(false);
+      setSelectedEventId(null);
+      onDelete(selectedEventId);
+    }
   };
 
   return (
@@ -92,6 +118,26 @@ const EventList: React.FC<EventListProps> = ({ onEdit, onDelete }) => {
           </CardContent>
         </Card>
       ))}
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the event
+              {selectedEventId !== null && events.find(e => e.id === selectedEventId) 
+                ? ` "${events.find(e => e.id === selectedEventId)?.name}"` 
+                : ""}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -28,6 +27,7 @@ export interface RevenueAnalysisTableProps {
   formatCurrency: (amount: number) => string;
   getVarianceClass: (variance: number) => string;
   onAddRevenueClick: () => void;
+  onDeleteRevenue?: (revenueId: string) => void;
 }
 
 const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
@@ -37,7 +37,8 @@ const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
   revenueDataLength,
   formatCurrency,
   getVarianceClass,
-  onAddRevenueClick
+  onAddRevenueClick,
+  onDeleteRevenue
 }) => {
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<Record<string, RevenueItem>>({});
@@ -89,7 +90,12 @@ const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
   const confirmDelete = () => {
     if (selectedItemId) {
       const itemToDelete = filteredRevenues.find(item => item.id === selectedItemId);
-      // In a real app, you would delete from database
+      
+      // Call the parent component's delete handler if provided
+      if (onDeleteRevenue) {
+        onDeleteRevenue(selectedItemId);
+      }
+      
       toast.success(`Revenue item "${itemToDelete?.description}" deleted successfully`);
       setShowDeleteDialog(false);
       setSelectedItemId(null);

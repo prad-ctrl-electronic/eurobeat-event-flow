@@ -36,7 +36,13 @@ const StaffProfile = () => {
             ? staffMember.status 
             : "inactive", // Default fallback if not matching any expected status
     // Ensure contract is always provided as it's required in BudgetStaffMember
-    contract: staffMember.contract || "Standard"
+    contract: staffMember.contract || "Standard",
+    // Ensure payrollType is one of the allowed values
+    payrollType: (staffMember.payrollType === "B2B" ||
+                staffMember.payrollType === "UoD" ||
+                staffMember.payrollType === "UoP")
+                ? staffMember.payrollType
+                : undefined
   };
   
   const getDepartmentName = (departmentId: string | undefined): string => {

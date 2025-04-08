@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Table,
@@ -35,6 +34,7 @@ interface CostsAnalysisTableProps {
   formatCurrency: (amount: number) => string;
   getVarianceClass: (variance: number) => string;
   onAddCostClick: () => void;
+  onDeleteCost?: (costId: string) => void;
 }
 
 const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
@@ -44,7 +44,8 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
   budgetDataLength,
   formatCurrency,
   getVarianceClass,
-  onAddCostClick
+  onAddCostClick,
+  onDeleteCost
 }) => {
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<Record<string, CostItem>>({});
@@ -94,7 +95,12 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
   const confirmDelete = () => {
     if (selectedItemId) {
       const itemToDelete = filteredCosts.find(item => item.id === selectedItemId);
-      // In a real app, you would delete from database
+      
+      // Call the parent component's delete handler if provided
+      if (onDeleteCost) {
+        onDeleteCost(selectedItemId);
+      }
+      
       toast.success(`Cost item "${itemToDelete?.description}" deleted successfully`);
       setShowDeleteDialog(false);
       setSelectedItemId(null);
