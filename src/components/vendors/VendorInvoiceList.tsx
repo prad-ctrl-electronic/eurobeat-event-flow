@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Table, 
@@ -13,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ActionButtonDropdown } from "@/components/ui/action-button-dropdown";
-import { Search, Download, Printer, FileSpreadsheet, FilePdf } from "lucide-react";
+import { Search, Download, Printer, FileSpreadsheet, FileText } from "lucide-react";
 import { vendors, getVendorInvoices } from "@/data/vendorData";
 import { invoiceStatusOptions } from "@/components/finance/InvoiceTable";
 import { toast } from "sonner";
@@ -33,14 +32,12 @@ interface VendorInvoiceListProps {
 const VendorInvoiceList: React.FC<VendorInvoiceListProps> = ({ vendorId, selectedEventId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   
-  // Get vendor and invoices
   const vendor = vendors.find(v => v.id === vendorId);
   const allInvoices = getVendorInvoices().filter(invoice => {
     const matchedVendor = vendors.find(v => v.name === invoice.supplier);
     return matchedVendor?.id === vendorId;
   });
   
-  // Filter by event and search term
   const filteredInvoices = allInvoices.filter(invoice => {
     const eventMatch = selectedEventId === "all" || invoice.event === selectedEventId;
     const searchMatch = 
@@ -81,7 +78,6 @@ const VendorInvoiceList: React.FC<VendorInvoiceListProps> = ({ vendorId, selecte
     });
   };
   
-  // Get status color class based on status value
   const getStatusColorClass = (status: string) => {
     switch (status.toLowerCase()) {
       case 'already paid':
@@ -124,7 +120,7 @@ const VendorInvoiceList: React.FC<VendorInvoiceListProps> = ({ vendorId, selecte
                 Export to Excel
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExport("pdf")}>
-                <FilePdf className="h-4 w-4 mr-2" />
+                <FileText className="h-4 w-4 mr-2" />
                 Export to PDF
               </DropdownMenuItem>
             </DropdownMenuContent>

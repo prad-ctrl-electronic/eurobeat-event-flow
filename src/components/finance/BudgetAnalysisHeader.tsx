@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -8,8 +7,7 @@ import {
   FileText, 
   BarChart4, 
   Calculator,
-  FileSpreadsheet,
-  FilePdf
+  FileSpreadsheet
 } from "lucide-react";
 import { useSelectedEventName } from "@/contexts/EventContext";
 import { toast } from "sonner";
@@ -157,7 +155,7 @@ const BudgetAnalysisHeader: React.FC<BudgetAnalysisHeaderProps> = ({
               Export to Excel
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleExportToPDF}>
-              <FilePdf className="h-4 w-4 mr-2" />
+              <FileText className="h-4 w-4 mr-2" />
               Export to PDF
             </DropdownMenuItem>
           </DropdownMenuContent>

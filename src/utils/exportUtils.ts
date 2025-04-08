@@ -20,7 +20,8 @@ type ExportSubmodule =
   | "bookings"
   | "summaries"
   | "analytics"
-  | "tax-overview";
+  | "tax-overview"
+  | "expenses";
 
 interface ExportOptions {
   format: ExportFormat;

@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Download, FileSpreadsheet, FilePdf } from "lucide-react";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import { exportData } from "@/utils/exportUtils";
 import { useSelectedEventName } from "@/contexts/EventContext";
 
@@ -26,7 +26,7 @@ const ExpensesTabContent = () => {
     exportData(expenses, {
       format,
       module: "finance",
-      submodule: "expenses",
+      submodule: "expenses" as any,
       eventName: selectedEventName,
       includeHeaders: true,
       dateRange: {
@@ -68,7 +68,7 @@ const ExpensesTabContent = () => {
                 Export to Excel
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExportExpenses("pdf")}>
-                <FilePdf className="h-4 w-4 mr-2" />
+                <FileText className="h-4 w-4 mr-2" />
                 Export to PDF
               </DropdownMenuItem>
             </DropdownMenuContent>

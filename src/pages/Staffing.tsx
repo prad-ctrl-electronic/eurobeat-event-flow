@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { 
   Download,
   FileSpreadsheet,
-  FilePdf
+  FileText
 } from "lucide-react";
 import { useEvent } from "@/contexts/EventContext";
 import {
@@ -20,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { staffMembers } from "@/data/staffingData";
+import { staffMembersData } from "@/data/staffingData";
 import { exportData } from "@/utils/exportUtils";
 
 const Staffing = () => {
@@ -30,8 +30,8 @@ const Staffing = () => {
   
   const handleExport = (format: "excel" | "pdf") => {
     // Export staff data
-    const staffData = staffMembers.filter(staff => 
-      selectedEventId === "all" || staff.assignedEvents.includes(selectedEventId)
+    const staffData = staffMembersData.filter(staff => 
+      selectedEventId === "all" || staff.assignedEvents?.includes(selectedEventId)
     );
     
     exportData(staffData, {
@@ -67,7 +67,7 @@ const Staffing = () => {
                   Export to Excel
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleExport("pdf")}>
-                  <FilePdf className="h-4 w-4 mr-2" />
+                  <FileText className="h-4 w-4 mr-2" />
                   Export to PDF
                 </DropdownMenuItem>
               </DropdownMenuContent>
