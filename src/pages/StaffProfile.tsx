@@ -34,7 +34,9 @@ const StaffProfile = () => {
             staffMember.status === "inactive" || 
             staffMember.status === "pending") 
             ? staffMember.status 
-            : "inactive" // Default fallback if not matching any expected status
+            : "inactive", // Default fallback if not matching any expected status
+    // Ensure contract is always provided as it's required in BudgetStaffMember
+    contract: staffMember.contract || "Standard"
   };
   
   const getDepartmentName = (departmentId: string | undefined): string => {
