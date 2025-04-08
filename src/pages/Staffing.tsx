@@ -57,7 +57,7 @@ const Staffing = () => {
       
       <StaffMetrics className="mb-6" />
       <StaffFilters className="mb-6" />
-      <StaffingTabs onDeleteStaffMember={handleDeleteStaffMember} />
+      <StaffingTabs />
 
       <AddStaffForm open={showAddStaffForm} onOpenChange={setShowAddStaffForm} />
 

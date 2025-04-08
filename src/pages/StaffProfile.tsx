@@ -42,7 +42,13 @@ const StaffProfile = () => {
                 staffMember.payrollType === "UoD" ||
                 staffMember.payrollType === "UoP")
                 ? staffMember.payrollType
-                : undefined
+                : undefined,
+    // Ensure rateType is one of the allowed values
+    rateType: (staffMember.rateType === "Hourly" ||
+               staffMember.rateType === "Daily" ||
+               staffMember.rateType === "Flat")
+               ? staffMember.rateType
+               : undefined
   };
   
   const getDepartmentName = (departmentId: string | undefined): string => {

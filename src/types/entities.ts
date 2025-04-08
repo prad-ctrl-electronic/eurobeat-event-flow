@@ -44,11 +44,11 @@ export interface StaffMember extends BaseEntity {
   role: string;
   email: string;
   phone?: string;
-  status: string;
+  status: "active" | "inactive" | "pending";
   department?: string;
-  payrollType?: string;
-  contract?: string;
-  rateType?: string;
+  payrollType?: "B2B" | "UoD" | "UoP";
+  contract: string;
+  rateType?: "Hourly" | "Daily" | "Flat";
   rateAmount?: number;
   currency?: string;
   nationality?: string;
