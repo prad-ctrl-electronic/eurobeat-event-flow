@@ -94,14 +94,15 @@ const CostsAnalysisTable: React.FC<CostsAnalysisTableProps> = ({
 
   const confirmDelete = () => {
     if (selectedItemId) {
-      const itemToDelete = filteredCosts.find(item => item.id === selectedItemId);
-      
-      // Call the parent component's delete handler if provided
+      // If the parent component provided a delete handler, use it
       if (onDeleteCost) {
         onDeleteCost(selectedItemId);
+      } else {
+        // Otherwise, just show a toast (but data won't actually be deleted)
+        const itemToDelete = filteredCosts.find(item => item.id === selectedItemId);
+        toast.success(`Cost item "${itemToDelete?.description}" deleted successfully`);
       }
       
-      toast.success(`Cost item "${itemToDelete?.description}" deleted successfully`);
       setShowDeleteDialog(false);
       setSelectedItemId(null);
     }

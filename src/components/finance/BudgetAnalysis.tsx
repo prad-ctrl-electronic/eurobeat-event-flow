@@ -12,6 +12,7 @@ import AddRevenueForm from "@/components/finance/budget/AddRevenueForm";
 import { CostItem, RevenueItem } from "@/components/finance/budget/types";
 import { costsData, revenueData, calculateSummary, getUniqueCategories, formatCurrency, getVarianceClass } from "@/components/finance/budget/budgetData";
 import { useEvent } from "@/contexts/EventContext";
+import { toast } from "sonner";
 
 // Budget analysis component
 const BudgetAnalysis: React.FC = () => {
@@ -66,6 +67,24 @@ const BudgetAnalysis: React.FC = () => {
   const handleAddRevenue = (newRevenue: RevenueItem) => {
     setRevenues([...revenues, newRevenue]);
     setShowAddRevenueForm(false);
+  };
+
+  // Handle deleting cost
+  const handleDeleteCost = (costId: string) => {
+    const costToDelete = costs.find(cost => cost.id === costId);
+    if (costToDelete) {
+      setCosts(costs.filter(cost => cost.id !== costId));
+      toast.success(`Cost item "${costToDelete.description}" deleted successfully`);
+    }
+  };
+
+  // Handle deleting revenue
+  const handleDeleteRevenue = (revenueId: string) => {
+    const revenueToDelete = revenues.find(revenue => revenue.id === revenueId);
+    if (revenueToDelete) {
+      setRevenues(revenues.filter(revenue => revenue.id !== revenueId));
+      toast.success(`Revenue item "${revenueToDelete.description}" deleted successfully`);
+    }
   };
 
   // Calculate summary data for the selected event
@@ -129,6 +148,7 @@ const BudgetAnalysis: React.FC = () => {
             formatCurrency={formatCurrency}
             getVarianceClass={getVarianceClass}
             onAddCostClick={() => setShowAddCostForm(true)}
+            onDeleteCost={handleDeleteCost}
           />
         </TabsContent>
         <TabsContent value="revenue">
@@ -140,6 +160,7 @@ const BudgetAnalysis: React.FC = () => {
             formatCurrency={formatCurrency}
             getVarianceClass={getVarianceClass}
             onAddRevenueClick={() => setShowAddRevenueForm(true)}
+            onDeleteRevenue={handleDeleteRevenue}
           />
         </TabsContent>
       </Tabs>

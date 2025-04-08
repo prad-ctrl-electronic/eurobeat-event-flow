@@ -89,14 +89,15 @@ const RevenueAnalysisTable: React.FC<RevenueAnalysisTableProps> = ({
 
   const confirmDelete = () => {
     if (selectedItemId) {
-      const itemToDelete = filteredRevenues.find(item => item.id === selectedItemId);
-      
-      // Call the parent component's delete handler if provided
+      // If the parent component provided a delete handler, use it
       if (onDeleteRevenue) {
         onDeleteRevenue(selectedItemId);
+      } else {
+        // Otherwise, just show a toast (but data won't actually be deleted)
+        const itemToDelete = filteredRevenues.find(item => item.id === selectedItemId);
+        toast.success(`Revenue item "${itemToDelete?.description}" deleted successfully`);
       }
       
-      toast.success(`Revenue item "${itemToDelete?.description}" deleted successfully`);
       setShowDeleteDialog(false);
       setSelectedItemId(null);
     }
