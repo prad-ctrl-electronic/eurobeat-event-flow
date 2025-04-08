@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Download, FileSpreadsheet, FileText } from "lucide-react";
-import { ExportModule, ExportSubmodule } from "@/utils/exportUtils";
+import { ExportModule, ExportSubmodule } from "@/utils/exportTypes";
 
 interface ExportDropdownProps {
   onExport: (format: "excel" | "pdf") => void;
