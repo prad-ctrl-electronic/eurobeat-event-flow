@@ -10,6 +10,7 @@ import ProfileTabs from "@/components/staff/ProfileTabs";
 import StaffNotFound from "@/components/staff/StaffNotFound";
 import { useState } from "react";
 import { useStaffMemberOperations } from "@/contexts/StaffMembersContext";
+import { StaffMember as BudgetStaffMember } from "@/components/finance/budget/types";
 
 const StaffProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +24,12 @@ const StaffProfile = () => {
   if (!staffMember) {
     return <StaffNotFound />;
   }
+  
+  // Convert to the format expected by the ProfileSummary and ProfileTabs components
+  const budgetStaffMember: BudgetStaffMember = {
+    ...staffMember,
+    id: Number(staffMember.id) // Ensure id is a number as expected by components
+  };
   
   const getDepartmentName = (departmentId: string | undefined): string => {
     if (!departmentId) return "Not Assigned";
@@ -40,10 +47,10 @@ const StaffProfile = () => {
         <main className="container mx-auto py-6 px-4">
           <ProfileHeader />
           <ProfileSummary 
-            staffMember={staffMember}
+            staffMember={budgetStaffMember}
             getDepartmentName={getDepartmentName}
           />
-          <ProfileTabs staffMember={staffMember} />
+          <ProfileTabs staffMember={budgetStaffMember} />
         </main>
       </div>
     </div>

@@ -9,21 +9,45 @@ import { Euro, FileInput } from "lucide-react";
 import VATCalculator from "./VATCalculator";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Expense } from "@/types/entities";
 
-const ExpenseForm = () => {
+interface ExpenseFormProps {
+  onSubmit?: (expense: Omit<Expense, "id">) => void;
+}
+
+const ExpenseForm = ({ onSubmit }: ExpenseFormProps = {}) => {
   const [netAmount, setNetAmount] = useState("");
   const [vatRate, setVatRate] = useState("");
   const [grossAmount, setGrossAmount] = useState("");
   
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success("Expense added successfully");
+    
+    // If an onSubmit prop was provided, call it with the form data
+    if (onSubmit) {
+      const newExpense: Omit<Expense, "id"> = {
+        date: new Date().toISOString(),
+        vendor: "Vendor Name", // These would come from form values in a real implementation
+        description: "Description from form",
+        category: "Equipment",
+        amount: parseFloat(grossAmount || "0"),
+        status: "pending",
+        paymentMethod: "bank transfer",
+        event: "Event Name"
+      };
+      
+      onSubmit(newExpense);
+    }
+    
+    // Reset form fields
+    setNetAmount("");
+    setVatRate("");
+    setGrossAmount("");
+  };
+  
   return (
-    <form className="space-y-4" onSubmit={(e) => {
-      e.preventDefault();
-      toast.success("Expense added successfully");
-      // Reset form fields
-      setNetAmount("");
-      setVatRate("");
-      setGrossAmount("");
-    }}>
+    <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="event">Related Event</Label>
