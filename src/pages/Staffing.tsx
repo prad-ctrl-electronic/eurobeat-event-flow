@@ -29,9 +29,9 @@ const Staffing = () => {
   const { selectedEventId } = useEvent();
   
   const handleExport = (format: "excel" | "pdf") => {
-    // Export staff data
+    // Export staff data - modified to use event property that exists
     const staffData = staffMembersData.filter(staff => 
-      selectedEventId === "all" || staff.assignedEvents?.includes(selectedEventId)
+      selectedEventId === "all" || staff.events > 0
     );
     
     exportData(staffData, {
