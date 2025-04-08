@@ -1,9 +1,24 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, Plus, FileText, BarChart4, Calculator } from "lucide-react";
+import { 
+  Download, 
+  Upload, 
+  Plus, 
+  FileText, 
+  BarChart4, 
+  Calculator,
+  FileSpreadsheet,
+  FilePdf
+} from "lucide-react";
 import { useSelectedEventName } from "@/contexts/EventContext";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export interface BudgetAnalysisHeaderProps {
   onAddCostClick: () => void;
@@ -16,12 +31,13 @@ const BudgetAnalysisHeader: React.FC<BudgetAnalysisHeaderProps> = ({
 }) => {
   const selectedEventName = useSelectedEventName();
 
-  const handleExport = () => {
-    // In a real app, this would trigger a file download
+  const handleExportToExcel = () => {
+    // In a real app, this would trigger an Excel file download
     const budgetData = {
       event: selectedEventName,
       exportDate: new Date().toISOString(),
-      exportType: "budget-analysis"
+      exportType: "budget-analysis",
+      format: "excel"
     };
     
     // Convert to JSON and create blob
@@ -32,19 +48,44 @@ const BudgetAnalysisHeader: React.FC<BudgetAnalysisHeaderProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${selectedEventName.replace(/\s+/g, '-').toLowerCase()}-budget-analysis.json`;
+    link.download = `${selectedEventName.replace(/\s+/g, '-').toLowerCase()}-budget-analysis.xlsx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    toast.success("Budget data exported successfully");
+    toast.success("Budget data exported as Excel");
+  };
+
+  const handleExportToPDF = () => {
+    // In a real app, this would trigger a PDF file download
+    const budgetData = {
+      event: selectedEventName,
+      exportDate: new Date().toISOString(),
+      exportType: "budget-analysis",
+      format: "pdf"
+    };
+    
+    // Convert to JSON and create blob
+    const jsonData = JSON.stringify(budgetData, null, 2);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    
+    // Create download link and trigger click
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${selectedEventName.replace(/\s+/g, '-').toLowerCase()}-budget-analysis.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success("Budget data exported as PDF");
   };
 
   const handleImport = () => {
     // Create a file input element
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
-    fileInput.accept = '.json,.csv';
+    fileInput.accept = '.json,.csv,.xlsx';
     
     // Handle file selection
     fileInput.onchange = (e) => {
@@ -99,15 +140,28 @@ const BudgetAnalysisHeader: React.FC<BudgetAnalysisHeaderProps> = ({
       </div>
       
       <div className="flex flex-wrap gap-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex items-center gap-2"
-          onClick={handleExport}
-        >
-          <Download className="h-4 w-4" />
-          Export
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={handleExportToExcel}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Export to Excel
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportToPDF}>
+              <FilePdf className="h-4 w-4 mr-2" />
+              Export to PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         
         <Button 
           variant="outline" 

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import ExpenseForm from "./ExpenseForm";
@@ -6,32 +5,35 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ExpenseActions from "./ExpenseActions";
-import { formatCurrency, downloadData } from "@/utils/financeUtils";
+import { formatCurrency } from "@/utils/financeUtils";
 import { useExpenses } from "./hooks/useExpenses";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Download, FileSpreadsheet, FilePdf } from "lucide-react";
+import { exportData } from "@/utils/exportUtils";
+import { useSelectedEventName } from "@/contexts/EventContext";
 
 const ExpensesTabContent = () => {
   const [showForm, setShowForm] = useState(false);
   const { expenses, totalAmount } = useExpenses();
+  const selectedEventName = useSelectedEventName();
   
-  const downloadExpenseReport = () => {
-    // Create report data
-    const reportData = {
-      reportDate: new Date().toISOString(),
-      generatedBy: "System",
-      totalExpenses: totalAmount,
-      expensesByCategory: expenses.reduce((acc, exp) => {
-        acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
-        return acc;
-      }, {} as Record<string, number>),
-      expensesByEvent: expenses.reduce((acc, exp) => {
-        acc[exp.event] = (acc[exp.event] || 0) + exp.amount;
-        return acc;
-      }, {} as Record<string, number>),
-      expenses
-    };
-    
-    const filename = `expense-report-${new Date().toISOString().split('T')[0]}.json`;
-    downloadData(reportData, filename);
+  const handleExportExpenses = (format: "excel" | "pdf") => {
+    exportData(expenses, {
+      format,
+      module: "finance",
+      submodule: "expenses",
+      eventName: selectedEventName,
+      includeHeaders: true,
+      dateRange: {
+        start: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+        end: new Date()
+      }
+    });
   };
 
   return (
@@ -52,7 +54,25 @@ const ExpensesTabContent = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-between mb-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="mr-2">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleExportExpenses("excel")}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Export to Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExportExpenses("pdf")}>
+                <FilePdf className="h-4 w-4 mr-2" />
+                Export to PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button onClick={() => setShowForm(true)}>Add New Expense</Button>
         </div>
       )}
@@ -63,7 +83,7 @@ const ExpensesTabContent = () => {
             <CardTitle>Recent Expenses</CardTitle>
             <CardDescription>Your latest expense entries</CardDescription>
           </div>
-          <ExpenseActions onDownloadReport={downloadExpenseReport} />
+          <ExpenseActions onDownloadReport={() => handleExportExpenses("excel")} />
         </CardHeader>
         <CardContent>
           <ExpensesTable expenses={expenses} />

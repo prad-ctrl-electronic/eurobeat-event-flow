@@ -13,10 +13,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ActionButtonDropdown } from "@/components/ui/action-button-dropdown";
-import { Search, FileDown, Printer } from "lucide-react";
+import { Search, Download, Printer, FileSpreadsheet, FilePdf } from "lucide-react";
 import { vendors, getVendorInvoices } from "@/data/vendorData";
 import { invoiceStatusOptions } from "@/components/finance/InvoiceTable";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { exportData } from "@/utils/exportUtils";
 
 interface VendorInvoiceListProps {
   vendorId: string;
@@ -56,6 +63,23 @@ const VendorInvoiceList: React.FC<VendorInvoiceListProps> = ({ vendorId, selecte
   const handleStatusChange = (index: number, value: string) => {
     toast.success(`Invoice status updated to "${value}"`);
   };
+
+  const handleExport = (format: "excel" | "pdf") => {
+    const vendorName = vendor?.name || "vendor";
+    
+    exportData(filteredInvoices, {
+      format,
+      module: "vendors",
+      submodule: "vendor-invoices",
+      eventName: selectedEventId !== "all" ? selectedEventId : undefined,
+      fileName: `${vendorName.toLowerCase().replace(/\s+/g, '-')}-invoices.${format === 'excel' ? 'xlsx' : 'pdf'}`,
+      filters: {
+        vendor: vendorId,
+        event: selectedEventId,
+        search: searchTerm
+      }
+    });
+  };
   
   // Get status color class based on status value
   const getStatusColorClass = (status: string) => {
@@ -87,10 +111,24 @@ const VendorInvoiceList: React.FC<VendorInvoiceListProps> = ({ vendorId, selecte
         </div>
         
         <div className="flex gap-2 w-full md:w-auto justify-end">
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <FileDown className="h-4 w-4" />
-            Export
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleExport("excel")}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Export to Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport("pdf")}>
+                <FilePdf className="h-4 w-4 mr-2" />
+                Export to PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="outline" size="sm" className="flex items-center gap-2">
             <Printer className="h-4 w-4" />
             Print
