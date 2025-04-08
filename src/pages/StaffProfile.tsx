@@ -28,7 +28,13 @@ const StaffProfile = () => {
   // Convert to the format expected by the ProfileSummary and ProfileTabs components
   const budgetStaffMember: BudgetStaffMember = {
     ...staffMember,
-    id: Number(staffMember.id) // Ensure id is a number as expected by components
+    id: Number(staffMember.id), // Ensure id is a number as expected by components
+    // Ensure status is one of the allowed values in BudgetStaffMember type
+    status: (staffMember.status === "active" || 
+            staffMember.status === "inactive" || 
+            staffMember.status === "pending") 
+            ? staffMember.status 
+            : "inactive" // Default fallback if not matching any expected status
   };
   
   const getDepartmentName = (departmentId: string | undefined): string => {
