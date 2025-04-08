@@ -7,15 +7,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ExpenseActions from "./ExpenseActions";
 import { formatCurrency } from "@/utils/financeUtils";
-import { useExpenses } from "./hooks/useExpenses";
 import ExportDropdown from "@/components/common/ExportDropdown";
 import { exportData } from "@/utils/exportUtils";
 import { useSelectedEventName } from "@/contexts/EventContext";
+import { useExpenseOperations } from "@/contexts/ExpensesContext";
+import { Expense } from "@/types/entities";
 
 const ExpensesTabContent = () => {
   const [showForm, setShowForm] = useState(false);
-  const { expenses, totalAmount } = useExpenses();
+  const { getActiveExpenses, addExpense, updateExpense, deleteExpense } = useExpenseOperations();
+  const expenses = getActiveExpenses();
   const selectedEventName = useSelectedEventName();
+  
+  // Calculate total amount
+  const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
   
   const handleExportExpenses = (format: "excel" | "pdf") => {
     exportData(expenses, {
@@ -31,10 +36,15 @@ const ExpensesTabContent = () => {
     });
   };
 
+  const handleAddExpense = (newExpense: Omit<Expense, 'id'>) => {
+    addExpense(newExpense);
+    setShowForm(false);
+  };
+
   return (
     <div className="space-y-6">
       {showForm ? (
-        <ExpenseFormCard onCancel={() => setShowForm(false)} />
+        <ExpenseFormCard onCancel={() => setShowForm(false)} onSubmit={handleAddExpense} />
       ) : (
         <div className="flex justify-between mb-4">
           <ExportDropdown onExport={handleExportExpenses} />
@@ -42,12 +52,24 @@ const ExpensesTabContent = () => {
         </div>
       )}
       
-      <ExpensesList expenses={expenses} totalAmount={totalAmount} onExport={handleExportExpenses} />
+      <ExpensesList 
+        expenses={expenses} 
+        totalAmount={totalAmount} 
+        onExport={handleExportExpenses}
+        onUpdate={updateExpense}
+        onDelete={deleteExpense}
+      />
     </div>
   );
 };
 
-const ExpenseFormCard = ({ onCancel }: { onCancel: () => void }) => {
+const ExpenseFormCard = ({ 
+  onCancel, 
+  onSubmit 
+}: { 
+  onCancel: () => void;
+  onSubmit: (expense: Omit<Expense, 'id'>) => void;
+}) => {
   return (
     <Card className="card-gradient">
       <CardHeader>
@@ -55,7 +77,7 @@ const ExpenseFormCard = ({ onCancel }: { onCancel: () => void }) => {
         <CardDescription>Enter the details of your expense</CardDescription>
       </CardHeader>
       <CardContent>
-        <ExpenseForm />
+        <ExpenseForm onSubmit={onSubmit} />
         <div className="flex justify-end mt-4">
           <Button variant="outline" onClick={onCancel} className="mr-2">
             Cancel
@@ -70,9 +92,11 @@ interface ExpensesListProps {
   expenses: Expense[];
   totalAmount: number;
   onExport: (format: "excel" | "pdf") => void;
+  onUpdate: (id: string | number, updates: Partial<Expense>) => void;
+  onDelete: (id: string | number, hardDelete?: boolean) => void;
 }
 
-const ExpensesList = ({ expenses, totalAmount, onExport }: ExpensesListProps) => {
+const ExpensesList = ({ expenses, totalAmount, onExport, onUpdate, onDelete }: ExpensesListProps) => {
   return (
     <Card className="card-gradient">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -83,7 +107,7 @@ const ExpensesList = ({ expenses, totalAmount, onExport }: ExpensesListProps) =>
         <ExpenseActions onDownloadReport={() => onExport("excel")} />
       </CardHeader>
       <CardContent>
-        <ExpensesTable expenses={expenses} />
+        <ExpensesTable expenses={expenses} onUpdate={onUpdate} onDelete={onDelete} />
         
         <div className="mt-4 text-right text-sm font-medium">
           Total: {formatCurrency(totalAmount)}
@@ -93,19 +117,15 @@ const ExpensesList = ({ expenses, totalAmount, onExport }: ExpensesListProps) =>
   );
 };
 
-interface Expense {
-  id: string;
-  date: string;
-  vendor: string;
-  description: string;
-  category: string;
-  amount: number;
-  status: string;
-  paymentMethod: string;
-  event: string;
-}
-
-const ExpensesTable = ({ expenses }: { expenses: Expense[] }) => {
+const ExpensesTable = ({ 
+  expenses,
+  onUpdate,
+  onDelete 
+}: { 
+  expenses: Expense[];
+  onUpdate: (id: string | number, updates: Partial<Expense>) => void;
+  onDelete: (id: string | number, hardDelete?: boolean) => void;
+}) => {
   return (
     <Table>
       <TableHeader>
@@ -117,6 +137,7 @@ const ExpensesTable = ({ expenses }: { expenses: Expense[] }) => {
           <TableHead>Event</TableHead>
           <TableHead className="text-right">Amount</TableHead>
           <TableHead>Status</TableHead>
+          <TableHead className="w-[100px]">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -132,6 +153,17 @@ const ExpensesTable = ({ expenses }: { expenses: Expense[] }) => {
               <Badge variant={expense.status === 'paid' ? 'default' : 'outline'}>
                 {expense.status}
               </Badge>
+            </TableCell>
+            <TableCell>
+              <div className="flex gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => onDelete(expense.id)}
+                >
+                  Delete
+                </Button>
+              </div>
             </TableCell>
           </TableRow>
         ))}

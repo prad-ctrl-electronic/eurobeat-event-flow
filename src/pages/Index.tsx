@@ -9,9 +9,23 @@ import VendorOverview from "@/components/dashboard/VendorOverview";
 import StaffingWidget from "@/components/dashboard/StaffingWidget";
 import EventFilter from "@/components/EventFilter";
 import { useEvent } from "@/contexts/EventContext";
+import { useEventOperations } from "@/contexts/EventsContext";
+import { useExpenseOperations } from "@/contexts/ExpensesContext";
+import { useStaffMemberOperations } from "@/contexts/StaffMembersContext";
 
 const DashboardPage = () => {
   const { selectedEventId, setSelectedEventId } = useEvent();
+  
+  // Fetch all necessary data from contexts to ensure the dashboard has access to synchronized data
+  const { getActiveEvents } = useEventOperations();
+  const { getActiveExpenses } = useExpenseOperations();
+  const { getActiveStaffMembers } = useStaffMemberOperations();
+  
+  // This ensures that if any of these items are updated elsewhere in the app,
+  // the dashboard will re-render with the latest data
+  const events = getActiveEvents();
+  const expenses = getActiveExpenses();
+  const staffMembers = getActiveStaffMembers();
 
   return (
     <PageLayout

@@ -9,13 +9,16 @@ import ProfileSummary from "@/components/staff/ProfileSummary";
 import ProfileTabs from "@/components/staff/ProfileTabs";
 import StaffNotFound from "@/components/staff/StaffNotFound";
 import { useState } from "react";
+import { useStaffMemberOperations } from "@/contexts/StaffMembersContext";
 
 const StaffProfile = () => {
   const { id } = useParams<{ id: string }>();
-  const { getStaffMemberById, departments } = useStaffing();
+  const { departments } = useStaffing();
+  const { getActiveStaffMembers } = useStaffMemberOperations();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  const staffMember = getStaffMemberById(Number(id));
+  const staffMembers = getActiveStaffMembers();
+  const staffMember = staffMembers.find(member => member.id.toString() === id);
   
   if (!staffMember) {
     return <StaffNotFound />;

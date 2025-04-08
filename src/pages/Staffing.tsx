@@ -8,18 +8,17 @@ import StaffingHeader from "@/components/staffing/StaffingHeader";
 import StaffingTabs from "@/components/staffing/StaffingTabs";
 import ExportDropdown from "@/components/common/ExportDropdown";
 import { useEvent } from "@/contexts/EventContext";
-import { staffMembersData } from "@/data/staffingData";
 import { exportData } from "@/utils/exportUtils";
+import { useStaffMemberOperations } from "@/contexts/StaffMembersContext";
 
 const Staffing = () => {
   const [showAddStaffForm, setShowAddStaffForm] = useState(false);
   const { selectedEventId } = useEvent();
+  const { getActiveStaffMembers } = useStaffMemberOperations();
   
   const handleExport = (format: "excel" | "pdf") => {
-    // Export staff data - modified to use event property that exists
-    const staffData = staffMembersData.filter(staff => 
-      selectedEventId === "all" || staff.events > 0
-    );
+    // Export staff data using the context data
+    const staffData = getActiveStaffMembers();
     
     exportData(staffData, {
       format,
