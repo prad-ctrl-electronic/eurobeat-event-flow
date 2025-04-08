@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, Plus, FileText, BarChart4 } from "lucide-react";
+import { Download, Upload, Plus, FileText, BarChart4, Calculator } from "lucide-react";
 import { useSelectedEventName } from "@/contexts/EventContext";
 import { toast } from "sonner";
 
@@ -70,6 +70,25 @@ const BudgetAnalysisHeader: React.FC<BudgetAnalysisHeaderProps> = ({
     }, 1500);
   };
 
+  const handleTaxCalculator = () => {
+    toast.success("Opening tax calculator");
+    // In a real app, this would navigate to or open the tax calculator
+    
+    // Find the Taxes tab in the Finance page and activate it
+    const taxesTab = document.querySelector('[value="taxes"]') as HTMLElement;
+    if (taxesTab) {
+      taxesTab.click();
+      
+      // After a delay, switch to the calculator tab within the taxes component
+      setTimeout(() => {
+        const calculatorTab = document.querySelector('[value="calculator"]') as HTMLElement;
+        if (calculatorTab) {
+          calculatorTab.click();
+        }
+      }, 100);
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row justify-between mb-6 gap-4 items-start md:items-center">
       <div>
@@ -106,6 +125,16 @@ const BudgetAnalysisHeader: React.FC<BudgetAnalysisHeaderProps> = ({
         >
           <FileText className="h-4 w-4" />
           Generate Report
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2"
+          onClick={handleTaxCalculator}
+        >
+          <Calculator className="h-4 w-4" />
+          Tax Calculator
         </Button>
         
         <Button
