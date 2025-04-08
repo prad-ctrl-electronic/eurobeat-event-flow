@@ -18,6 +18,11 @@ import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StaffMember as EntityStaffMember } from "@/types/entities";
+
+interface StaffListProps {
+  onDeleteStaffMember?: (staffMember: EntityStaffMember) => void;
+}
 
 const getDepartmentName = (departmentId: string | undefined, departments: { id: string; name: string }[]): string => {
   if (!departmentId) return "Not Assigned";
@@ -25,7 +30,7 @@ const getDepartmentName = (departmentId: string | undefined, departments: { id: 
   return department ? department.name : "Unknown";
 };
 
-const StaffList: React.FC = () => {
+const StaffList: React.FC<StaffListProps> = ({ onDeleteStaffMember }) => {
   const { 
     filteredStaff, 
     updateStaffMember, 
@@ -72,8 +77,38 @@ const StaffList: React.FC = () => {
   };
 
   const handleDelete = (staffId: number) => {
-    setSelectedStaff(staffId);
-    setShowDeleteDialog(true);
+    const memberToDelete = filteredStaff.find(s => s.id === staffId);
+    
+    if (onDeleteStaffMember && memberToDelete) {
+      // Convert to EntityStaffMember type
+      const entityStaffMember: EntityStaffMember = {
+        id: memberToDelete.id,
+        name: memberToDelete.name,
+        initials: memberToDelete.initials,
+        role: memberToDelete.role,
+        email: memberToDelete.email,
+        phone: memberToDelete.phone,
+        status: memberToDelete.status,
+        department: memberToDelete.department,
+        payrollType: memberToDelete.payrollType as "B2B" | "UoD" | "UoP" | undefined,
+        contract: memberToDelete.contract || "Standard",
+        rateType: memberToDelete.rateType as "Hourly" | "Daily" | "Flat" | undefined,
+        rateAmount: memberToDelete.rateAmount,
+        events: memberToDelete.events,
+        currency: memberToDelete.currency,
+        nationality: memberToDelete.nationality,
+        countryOfResidence: memberToDelete.countryOfResidence,
+        taxId: memberToDelete.taxId,
+        agency: memberToDelete.agency,
+        documentsCompliance: memberToDelete.documentsCompliance,
+        documentsExpiry: memberToDelete.documentsExpiry
+      };
+      
+      onDeleteStaffMember(entityStaffMember);
+    } else {
+      setSelectedStaff(staffId);
+      setShowDeleteDialog(true);
+    }
   };
 
   const confirmDelete = () => {
