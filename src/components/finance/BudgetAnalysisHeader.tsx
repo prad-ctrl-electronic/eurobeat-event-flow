@@ -72,7 +72,6 @@ const BudgetAnalysisHeader: React.FC<BudgetAnalysisHeaderProps> = ({
 
   const handleTaxCalculator = () => {
     toast.success("Opening tax calculator");
-    // In a real app, this would navigate to or open the tax calculator
     
     // Find the Taxes tab in the Finance page and activate it
     const taxesTab = document.querySelector('[value="taxes"]') as HTMLElement;
@@ -84,6 +83,9 @@ const BudgetAnalysisHeader: React.FC<BudgetAnalysisHeaderProps> = ({
         const calculatorTab = document.querySelector('[value="calculator"]') as HTMLElement;
         if (calculatorTab) {
           calculatorTab.click();
+        } else {
+          // If calculator tab doesn't exist yet, create a toast explaining why
+          toast.info("Enhanced tax calculator is being prepared. Please try again in a moment.");
         }
       }, 100);
     }

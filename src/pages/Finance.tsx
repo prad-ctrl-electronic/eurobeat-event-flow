@@ -49,6 +49,17 @@ const Finance = () => {
     setActiveTab("expenses");
   };
 
+  const handleShowTaxCalculator = () => {
+    setActiveTab("taxes");
+    // Wait for the tab to activate, then switch to the calculator sub-tab
+    setTimeout(() => {
+      const calculatorTab = document.querySelector('[value="calculator"]') as HTMLElement;
+      if (calculatorTab) {
+        calculatorTab.click();
+      }
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -67,7 +78,7 @@ const Finance = () => {
             />
             
             <div className="flex flex-wrap gap-2 w-full md:w-auto">
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2" onClick={handleShowTaxCalculator}>
                 <Calculator className="h-4 w-4" /> Tax Calculator
               </Button>
               <Button variant="outline" className="gap-2">
