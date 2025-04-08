@@ -1,208 +1,108 @@
-import { toast } from "sonner";
-import { formatCurrency } from "./financeUtils";
-import { ExportFormat, ExportModule, ExportSubmodule, ExportOptions } from "./exportTypes";
+
+// Export utils - provides functionality to export data to various formats
+
+import { formatCurrency } from './financeUtils';
+import { BaseEntity } from '@/types/entities';
+
+// Define modules that can be exported
+export type ExportModule = 'finance' | 'staffing' | 'events' | 'vendors';
+
+// Define submodules within each module
+export type ExportSubmodule = 
+  | 'expenses' 
+  | 'income' 
+  | 'taxes' 
+  | 'employees' 
+  | 'contractors'
+  | 'event-details'
+  | 'vendor-invoices';
+
+// Options for export operation
+export interface ExportOptions {
+  format: 'excel' | 'pdf';
+  module?: ExportModule;
+  submodule?: ExportSubmodule;
+  eventId?: string;
+  eventName?: string;
+  fileName?: string;
+  includeHeaders?: boolean;
+  includeDeleted?: boolean;
+  dateRange?: {
+    start: Date;
+    end: Date;
+  };
+  filters?: Record<string, any>;
+}
 
 /**
- * Generate export file name based on export options
+ * Export data to Excel or PDF format
+ * @param data The data to export
+ * @param options Export configuration options
  */
-export const generateExportFileName = (options: ExportOptions): string => {
-  const { format, module, submodule, eventName, fileName } = options;
+export const exportData = (data: any[], options: ExportOptions) => {
+  console.log(`Exporting ${data.length} items to ${options.format}`);
   
-  // If custom filename is provided, use it
-  if (fileName) return fileName;
+  // Filter out soft-deleted items unless explicitly requested
+  const filteredData = options.includeDeleted 
+    ? data 
+    : data.filter(item => !('isDeleted' in item) || item.isDeleted !== true);
   
-  // Build file name from options
-  const dateStr = new Date().toISOString().split('T')[0];
-  const eventStr = eventName ? `-${eventName.replace(/\s+/g, '-').toLowerCase()}` : '';
-  const submoduleStr = submodule ? `-${submodule}` : '';
-  const extension = format === 'excel' ? '.xlsx' : '.pdf';
+  // Generate default filename if not provided
+  const fileName = options.fileName || generateFileName(options);
   
-  return `${module}${submoduleStr}${eventStr}-${dateStr}${extension}`;
-};
-
-/**
- * Universal export function for any data
- */
-export const exportData = async (data: any, options: ExportOptions): Promise<void> => {
-  const { format, module, submodule } = options;
-  const fileName = generateExportFileName(options);
-  
-  try {
-    if (format === 'excel') {
-      await exportToExcel(data, fileName, options);
-    } else {
-      await exportToPDF(data, fileName, options);
-    }
-    
-    toast.success(`${capitalizeFirstLetter(submodule || module)} exported as ${format.toUpperCase()}`);
-  } catch (error) {
-    console.error('Export failed:', error);
-    toast.error(`Failed to export as ${format.toUpperCase()}. Please try again.`);
+  if (options.format === 'excel') {
+    exportToExcel(filteredData, fileName, options);
+  } else if (options.format === 'pdf') {
+    exportToPdf(filteredData, fileName, options);
   }
 };
 
-/**
- * Export data as Excel
- */
-const exportToExcel = async (data: any, fileName: string, options: ExportOptions): Promise<void> => {
-  // In a real implementation, we would use a library like SheetJS/ExcelJS
-  // This is a placeholder that creates a JSON file instead
+// Helper to generate default filename based on export options
+const generateFileName = (options: ExportOptions): string => {
+  const module = options.module || 'data';
+  const submodule = options.submodule ? `-${options.submodule}` : '';
+  const date = new Date().toISOString().split('T')[0];
+  const eventSegment = options.eventName ? `-${options.eventName.toLowerCase().replace(/\s+/g, '-')}` : '';
   
-  // Prepare export metadata
-  const exportMeta = {
-    exportedAt: new Date().toISOString(),
-    exportedBy: "Current User", // In real app, get from auth context
-    module: options.module,
-    submodule: options.submodule,
-    filters: options.filters || {},
-    data: data
-  };
-  
-  // Create blob and trigger download
-  const jsonString = JSON.stringify(exportMeta, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
-  
-  downloadBlob(blob, fileName.replace('.xlsx', '.json'));
+  return `${module}${submodule}${eventSegment}-${date}.${options.format === 'excel' ? 'xlsx' : 'pdf'}`;
 };
 
-/**
- * Export data as PDF
- */
-const exportToPDF = async (data: any, fileName: string, options: ExportOptions): Promise<void> => {
-  // In a real implementation, we would use a library like jsPDF or react-pdf
-  // This is a placeholder that creates a JSON file instead
+// Mock function to simulate Excel export
+const exportToExcel = (data: any[], fileName: string, options: ExportOptions) => {
+  console.log(`Exporting ${data.length} rows to Excel file: ${fileName}`);
+  console.log('Export options:', options);
   
-  // Prepare export metadata with PDF specific info
-  const exportMeta = {
-    exportedAt: new Date().toISOString(),
-    exportedBy: "Current User", // In real app, get from auth context
-    module: options.module,
-    submodule: options.submodule,
-    format: "PDF",
-    orientation: guessOptimalOrientation(data),
-    pageCount: Math.ceil(Array.isArray(data) ? data.length / 20 : 1),
-    filters: options.filters || {},
-    data: data
-  };
-  
-  // Create blob and trigger download
-  const jsonString = JSON.stringify(exportMeta, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
-  
-  downloadBlob(blob, fileName.replace('.pdf', '.json'));
+  // In a real implementation, this would use a library like xlsx or exceljs
+  // Mock the browser download
+  downloadMockFile(data, fileName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 };
 
-/**
- * Helper to download Blob data
- */
-const downloadBlob = (blob: Blob, fileName: string): void => {
+// Mock function to simulate PDF export
+const exportToPdf = (data: any[], fileName: string, options: ExportOptions) => {
+  console.log(`Exporting ${data.length} rows to PDF file: ${fileName}`);
+  console.log('Export options:', options);
+  
+  // In a real implementation, this would use a library like jspdf or pdfmake
+  // Mock the browser download
+  downloadMockFile(data, fileName, 'application/pdf');
+};
+
+// Mock file download using Blob
+const downloadMockFile = (data: any, fileName: string, mimeType: string) => {
+  // Convert to JSON string
+  const jsonString = JSON.stringify(data, null, 2);
+  
+  // Create a blob
+  const blob = new Blob([jsonString], { type: mimeType });
+  
+  // Create download link
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.download = fileName;
+  
+  // Append to body, click, and remove
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-};
-
-/**
- * Guess optimal orientation based on data structure
- */
-const guessOptimalOrientation = (data: any): 'portrait' | 'landscape' => {
-  // If data is an array with objects that have many properties, use landscape
-  if (Array.isArray(data) && data.length > 0) {
-    const firstItem = data[0];
-    if (typeof firstItem === 'object' && Object.keys(firstItem).length > 5) {
-      return 'landscape';
-    }
-  }
-  return 'portrait';
-};
-
-/**
- * Format array of objects for Excel/PDF export
- */
-export const formatTableDataForExport = (
-  data: Record<string, any>[], 
-  options: { 
-    dateFields?: string[], 
-    currencyFields?: string[],
-    includeFields?: string[],
-    excludeFields?: string[]
-  } = {}
-): Record<string, any>[] => {
-  const { dateFields = [], currencyFields = [], includeFields, excludeFields = [] } = options;
-  
-  return data.map(row => {
-    const formattedRow: Record<string, any> = {};
-    
-    // Filter fields based on include/exclude options
-    Object.keys(row).forEach(key => {
-      // Skip excluded fields
-      if (excludeFields.includes(key)) return;
-      
-      // Skip if includeFields is specified and this field is not in it
-      if (includeFields && !includeFields.includes(key)) return;
-      
-      let value = row[key];
-      
-      // Format date fields
-      if (dateFields.includes(key) && value) {
-        if (value instanceof Date) {
-          value = value.toLocaleDateString();
-        } else if (typeof value === 'string') {
-          try {
-            value = new Date(value).toLocaleDateString();
-          } catch (e) {
-            // Keep original value if not parsable as date
-          }
-        }
-      }
-      
-      // Format currency fields
-      if (currencyFields.includes(key) && typeof value === 'number') {
-        value = formatCurrency(value);
-      }
-      
-      formattedRow[key] = value;
-    });
-    
-    return formattedRow;
-  });
-};
-
-/**
- * Helper function to capitalize first letter
- */
-export const capitalizeFirstLetter = (string: string = ''): string => {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-};
-
-/**
- * Prepare data for export with headers and formatting
- */
-export const prepareExportData = (
-  data: any[],
-  options: {
-    headers?: Record<string, string>;  // Map field names to display names
-    dateFields?: string[];
-    currencyFields?: string[];
-    includeFields?: string[];
-    excludeFields?: string[];
-  } = {}
-) => {
-  const { headers = {}, ...formatOptions } = options;
-  
-  // Format data
-  const formattedData = formatTableDataForExport(data, formatOptions);
-  
-  // If headers are provided, transform field names to display names
-  if (Object.keys(headers).length > 0) {
-    return {
-      headers: headers,
-      data: formattedData
-    };
-  }
-  
-  return formattedData;
 };

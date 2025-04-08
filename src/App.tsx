@@ -1,51 +1,38 @@
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import DashboardPage from "@/pages/Index";
-import Finance from "@/pages/Finance";
-import Events from "@/pages/Events";
-import Tasks from "@/pages/Tasks";
-import Reports from "@/pages/Reports";
-import Staffing from "@/pages/Staffing";
-import StaffProfile from "@/pages/StaffProfile";
-import VendorManagement from "@/pages/VendorManagement";
-import VendorDetail from "@/pages/VendorDetail";
-import NotFound from "@/pages/NotFound";
-import Login from "@/pages/Login";
-import SignUp from "@/pages/SignUp";
-import VerifyEmail from "@/pages/VerifyEmail";
-import { Toaster } from "@/components/ui/sonner";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { EventProvider } from "@/contexts/EventContext";
-import { StaffingProvider } from "@/contexts/StaffingContext";
-import "./App.css";
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import DashboardPage from "./pages/Index";
+import Events from "./pages/Events";
+import Finance from "./pages/Finance";
+import Staffing from "./pages/Staffing";
+import StaffProfile from "./pages/StaffProfile";
+import { EventProvider } from "./contexts/EventContext";
+import { StaffingProvider } from "./contexts/StaffingContext";
+import { CoreEntityProvider } from "./contexts/EntityContext";
+import NotificationSystem from "./components/common/NotificationSystem";
+import { Toaster } from "./components/ui/sonner";
 
-function App() {
+const App: React.FC = () => {
   return (
-    <AuthProvider>
+    <CoreEntityProvider>
       <EventProvider>
         <StaffingProvider>
-          <Router>
+          <BrowserRouter>
             <Routes>
               <Route path="/" element={<DashboardPage />} />
-              <Route path="/finance" element={<Finance />} />
               <Route path="/events" element={<Events />} />
-              <Route path="/tasks" element={<Tasks />} />
-              <Route path="/reports" element={<Reports />} />
+              <Route path="/finance" element={<Finance />} />
               <Route path="/staffing" element={<Staffing />} />
-              <Route path="/staffing/:id" element={<StaffProfile />} />
-              <Route path="/vendors" element={<VendorManagement />} />
-              <Route path="/vendors/:id" element={<VendorDetail />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/verify-email" element={<VerifyEmail />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="/staff/:id" element={<StaffProfile />} />
+              <Route path="*" element={<DashboardPage />} />
             </Routes>
-          </Router>
-          <Toaster position="top-right" richColors />
+          </BrowserRouter>
+          <Toaster />
+          <NotificationSystem />
         </StaffingProvider>
       </EventProvider>
-    </AuthProvider>
+    </CoreEntityProvider>
   );
-}
+};
 
 export default App;
