@@ -90,14 +90,14 @@ const EventsSyncHandler: React.FC<{ children: ReactNode }> = ({ children }) => {
   };
   
   return (
-    <EventContext.Provider 
+    <EntityContext.Provider 
       value={{
         ...useEntity(),
         dispatch: syncingDispatch
       }}
     >
       {children}
-    </EventContext.Provider>
+    </EntityContext.Provider>
   );
 };
 
