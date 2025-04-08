@@ -75,3 +75,36 @@ export function propagateSync(entityType: EntityType): void {
     triggerSync(dependent);
   });
 }
+
+/**
+ * Extended propagation with operation type and affected entity ID
+ * For more granular sync operations
+ * @param entityType The type of entity that was modified
+ * @param operation The operation performed (add, update, delete, restore)
+ * @param entityId Optional ID of the specific entity affected
+ */
+export function propagateSyncWithOperation(
+  entityType: EntityType, 
+  operation: 'add' | 'update' | 'delete' | 'restore',
+  entityId?: string | number
+): void {
+  console.log(`Propagating ${operation} for ${entityType}${entityId ? ` (ID: ${entityId})` : ''}`);
+  
+  // First sync the entity itself
+  triggerSync(entityType);
+  
+  // Then sync all dependent entities
+  const dependents = entityDependencies[entityType] || [];
+  dependents.forEach(dependent => {
+    triggerSync(dependent);
+  });
+  
+  // Special case handling for specific operations
+  if (operation === 'delete') {
+    // When deleting, we need to ensure all financial calculations are updated
+    if (entityType === 'expense' || entityType === 'revenueItem' || entityType === 'costItem') {
+      // These all affect financial calculations
+      triggerSync('event'); // Update event financials
+    }
+  }
+}

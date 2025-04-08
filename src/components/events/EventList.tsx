@@ -14,7 +14,7 @@ interface EventListProps {
 }
 
 const EventList: React.FC<EventListProps> = ({ onEdit, onDelete }) => {
-  const { getActiveEvents, updateEvent, deleteEvent } = useEventOperations();
+  const { getActiveEvents, updateEvent } = useEventOperations();
   const [editingEvent, setEditingEvent] = useState<string | number | null>(null);
   const [editedValues, setEditedValues] = useState<Record<string, any>>({});
   
@@ -37,8 +37,6 @@ const EventList: React.FC<EventListProps> = ({ onEdit, onDelete }) => {
   };
 
   const handleDelete = (eventId: number | string) => {
-    // We use soft delete by default
-    deleteEvent(eventId);
     onDelete(eventId);
   };
 

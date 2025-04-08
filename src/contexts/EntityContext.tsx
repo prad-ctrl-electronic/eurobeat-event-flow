@@ -1,8 +1,9 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { BaseEntity, EntityAction, Notification } from '@/types/entities';
+import { BaseEntity, EntityAction, Notification, EntityType } from '@/types/entities';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "sonner";
+import { propagateSyncWithOperation } from '@/utils/dataSync';
 
 // Generic entity management context and helpers
 type EntityState<T extends BaseEntity> = {
@@ -66,7 +67,7 @@ export interface EntityContextValue {
   removeNotification: (id: string) => void;
   
   // Global sync helper
-  syncEntities: (entityType: string, action: string, entityId?: string | number) => void;
+  syncEntities: (entityType: EntityType, action: string, entityId?: string | number) => void;
 }
 
 // Helper function to create entity contexts
@@ -76,7 +77,7 @@ export function createEntityContext<T extends BaseEntity>() {
     state: EntityState<T>;
     dispatch: React.Dispatch<EntityAction<T>>;
     getEntities: (includeDeleted?: boolean) => T[];
-    addEntity: (entity: Omit<T, 'id'>) => void;
+    addEntity: (entity: Omit<T, 'id'>) => string | number;
     updateEntity: (id: string | number, updates: Partial<T>) => void;
     deleteEntity: (id: string | number, hardDelete?: boolean) => void;
     restoreEntity: (id: string | number) => void;
@@ -234,15 +235,18 @@ export const CoreEntityProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   // Function to sync entities when changes occur
-  const syncEntities = (entityType: string, action: string, entityId?: string | number) => {
+  const syncEntities = (entityType: EntityType, action: string, entityId?: string | number) => {
     // Get related entity types that need to be refreshed
     const relatedEntities = entitySyncMap[entityType] || [];
     
     console.log(`Syncing ${action} for ${entityType} (ID: ${entityId}) with: ${relatedEntities.join(', ')}`);
     
-    // Trigger refresh for each related entity type
-    // In a real implementation, this would dispatch actions to refresh data
-    // This is a placeholder for the actual implementation
+    // Use the new propagate function that handles operations and IDs
+    propagateSyncWithOperation(
+      entityType, 
+      action as 'add' | 'update' | 'delete' | 'restore', 
+      entityId
+    );
   };
 
   // Combine all context values

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import AppHeader from "@/components/AppHeader";
 import Sidebar from "@/components/Sidebar";
@@ -21,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { EventsProvider, useEventOperations } from "@/contexts/EventsContext";
+import { useEventOperations } from "@/contexts/EventsContext";
 
 const Events = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -45,15 +44,13 @@ const Events = () => {
         <AppHeader toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         
         <main className="container mx-auto py-6 px-4">
-          <EventsProvider>
-            <EventsContent 
-              selectedEvent={selectedEvent}
-              showDeleteDialog={showDeleteDialog}
-              setShowDeleteDialog={setShowDeleteDialog}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          </EventsProvider>
+          <EventsContent 
+            selectedEvent={selectedEvent}
+            showDeleteDialog={showDeleteDialog}
+            setShowDeleteDialog={setShowDeleteDialog}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </main>
       </div>
     </div>
