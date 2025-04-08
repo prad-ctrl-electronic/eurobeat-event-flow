@@ -1,7 +1,6 @@
 
-import React from "react";
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
+import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
 
@@ -22,9 +21,9 @@ const NotFound = () => {
         <p className="text-xl text-foreground mb-6">Oops! This page doesn't exist</p>
         <p className="text-muted-foreground mb-8">The page you're looking for wasn't found. Let's get you back on track.</p>
         <Button asChild className="gap-2">
-          <a href="/">
+          <Link to="/">
             <Home className="h-4 w-4" /> Return to Dashboard
-          </a>
+          </Link>
         </Button>
       </div>
     </div>

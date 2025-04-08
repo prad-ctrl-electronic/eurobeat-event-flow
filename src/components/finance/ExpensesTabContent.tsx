@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import ExpenseForm from "./ExpenseForm";
@@ -7,13 +8,7 @@ import { Button } from "@/components/ui/button";
 import ExpenseActions from "./ExpenseActions";
 import { formatCurrency } from "@/utils/financeUtils";
 import { useExpenses } from "./hooks/useExpenses";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import ExportDropdown from "@/components/common/ExportDropdown";
 import { exportData } from "@/utils/exportUtils";
 import { useSelectedEventName } from "@/contexts/EventContext";
 
@@ -26,7 +21,7 @@ const ExpensesTabContent = () => {
     exportData(expenses, {
       format,
       module: "finance",
-      submodule: "expenses" as any,
+      submodule: "expenses",
       eventName: selectedEventName,
       includeHeaders: true,
       dateRange: {
@@ -39,61 +34,62 @@ const ExpensesTabContent = () => {
   return (
     <div className="space-y-6">
       {showForm ? (
-        <Card className="card-gradient">
-          <CardHeader>
-            <CardTitle>Add New Expense</CardTitle>
-            <CardDescription>Enter the details of your expense</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ExpenseForm />
-            <div className="flex justify-end mt-4">
-              <Button variant="outline" onClick={() => setShowForm(false)} className="mr-2">
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <ExpenseFormCard onCancel={() => setShowForm(false)} />
       ) : (
         <div className="flex justify-between mb-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="mr-2">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleExportExpenses("excel")}>
-                <FileSpreadsheet className="h-4 w-4 mr-2" />
-                Export to Excel
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExportExpenses("pdf")}>
-                <FileText className="h-4 w-4 mr-2" />
-                Export to PDF
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ExportDropdown onExport={handleExportExpenses} />
           <Button onClick={() => setShowForm(true)}>Add New Expense</Button>
         </div>
       )}
       
-      <Card className="card-gradient">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <div>
-            <CardTitle>Recent Expenses</CardTitle>
-            <CardDescription>Your latest expense entries</CardDescription>
-          </div>
-          <ExpenseActions onDownloadReport={() => handleExportExpenses("excel")} />
-        </CardHeader>
-        <CardContent>
-          <ExpensesTable expenses={expenses} />
-          
-          <div className="mt-4 text-right text-sm font-medium">
-            Total: {formatCurrency(totalAmount)}
-          </div>
-        </CardContent>
-      </Card>
+      <ExpensesList expenses={expenses} totalAmount={totalAmount} onExport={handleExportExpenses} />
     </div>
+  );
+};
+
+const ExpenseFormCard = ({ onCancel }: { onCancel: () => void }) => {
+  return (
+    <Card className="card-gradient">
+      <CardHeader>
+        <CardTitle>Add New Expense</CardTitle>
+        <CardDescription>Enter the details of your expense</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ExpenseForm />
+        <div className="flex justify-end mt-4">
+          <Button variant="outline" onClick={onCancel} className="mr-2">
+            Cancel
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+interface ExpensesListProps {
+  expenses: Expense[];
+  totalAmount: number;
+  onExport: (format: "excel" | "pdf") => void;
+}
+
+const ExpensesList = ({ expenses, totalAmount, onExport }: ExpensesListProps) => {
+  return (
+    <Card className="card-gradient">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <div>
+          <CardTitle>Recent Expenses</CardTitle>
+          <CardDescription>Your latest expense entries</CardDescription>
+        </div>
+        <ExpenseActions onDownloadReport={() => onExport("excel")} />
+      </CardHeader>
+      <CardContent>
+        <ExpensesTable expenses={expenses} />
+        
+        <div className="mt-4 text-right text-sm font-medium">
+          Total: {formatCurrency(totalAmount)}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

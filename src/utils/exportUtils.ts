@@ -1,44 +1,6 @@
 import { toast } from "sonner";
 import { formatCurrency } from "./financeUtils";
-
-type ExportFormat = "excel" | "pdf";
-type ExportModule = "finance" | "staffing" | "vendors" | "events" | "dashboard";
-type ExportSubmodule = 
-  | "invoices" 
-  | "taxes" 
-  | "budgeting" 
-  | "reports"
-  | "employees"
-  | "contracts"
-  | "salaries"
-  | "vendor-invoices"
-  | "vendor-contracts"
-  | "vendor-payments"
-  | "lineups"
-  | "logistics"
-  | "scheduling"
-  | "bookings"
-  | "summaries"
-  | "analytics"
-  | "tax-overview"
-  | "expenses";
-
-interface ExportOptions {
-  format: ExportFormat;
-  module: ExportModule;
-  submodule?: ExportSubmodule;
-  eventId?: string;
-  eventName?: string;
-  dateRange?: {
-    start: Date;
-    end: Date;
-  };
-  filters?: Record<string, any>;
-  selectedRows?: string[];
-  exportAll?: boolean;
-  includeHeaders?: boolean;
-  fileName?: string;
-}
+import { ExportFormat, ExportModule, ExportSubmodule, ExportOptions } from "./exportTypes";
 
 /**
  * Generate export file name based on export options
@@ -100,13 +62,7 @@ const exportToExcel = async (data: any, fileName: string, options: ExportOptions
   const jsonString = JSON.stringify(exportMeta, null, 2);
   const blob = new Blob([jsonString], { type: 'application/json' });
   
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName.replace('.xlsx', '.json'); // Temporary use JSON
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  downloadBlob(blob, fileName.replace('.xlsx', '.json'));
 };
 
 /**
@@ -133,10 +89,17 @@ const exportToPDF = async (data: any, fileName: string, options: ExportOptions):
   const jsonString = JSON.stringify(exportMeta, null, 2);
   const blob = new Blob([jsonString], { type: 'application/json' });
   
+  downloadBlob(blob, fileName.replace('.pdf', '.json'));
+};
+
+/**
+ * Helper to download Blob data
+ */
+const downloadBlob = (blob: Blob, fileName: string): void => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = fileName.replace('.pdf', '.json'); // Temporary use JSON
+  link.download = fileName;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -211,7 +174,7 @@ export const formatTableDataForExport = (
 /**
  * Helper function to capitalize first letter
  */
-const capitalizeFirstLetter = (string: string = ''): string => {
+export const capitalizeFirstLetter = (string: string = ''): string => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
