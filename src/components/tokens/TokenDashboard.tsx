@@ -3,6 +3,7 @@ import React from "react";
 import { useTokens } from "@/contexts/TokenContext";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 const TokenDashboard: React.FC = () => {
   const { tokenStats, isLoading } = useTokens();
@@ -26,6 +27,34 @@ const TokenDashboard: React.FC = () => {
   const foodTruckPercent = ((foodTruckTokens / totalTokensCollected) * 100).toFixed(1);
   const barPercent = ((barTokens / totalTokensCollected) * 100).toFixed(1);
   const cloakroomPercent = ((cloakroomTokens / totalTokensCollected) * 100).toFixed(1);
+
+  // Define custom Progress components with different colors
+  const FoodTruckProgress = () => (
+    <div className="bg-gray-200 rounded-full h-2">
+      <div 
+        className="bg-amber-500 h-2 rounded-full" 
+        style={{ width: `${foodTruckPercent}%` }}
+      />
+    </div>
+  );
+
+  const BarProgress = () => (
+    <div className="bg-gray-200 rounded-full h-2">
+      <div 
+        className="bg-blue-500 h-2 rounded-full" 
+        style={{ width: `${barPercent}%` }}
+      />
+    </div>
+  );
+
+  const CloakroomProgress = () => (
+    <div className="bg-gray-200 rounded-full h-2">
+      <div 
+        className="bg-purple-500 h-2 rounded-full" 
+        style={{ width: `${cloakroomPercent}%` }}
+      />
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -72,11 +101,7 @@ const TokenDashboard: React.FC = () => {
               <span className="text-sm font-medium">Food Truck Tokens</span>
               <span className="text-sm font-medium">{foodTruckTokens.toLocaleString()} ({foodTruckPercent}%)</span>
             </div>
-            <Progress 
-              value={parseFloat(foodTruckPercent)} 
-              className="h-2 bg-gray-200" 
-              indicatorClassName="bg-amber-500" 
-            />
+            <FoodTruckProgress />
           </div>
           
           <div>
@@ -84,11 +109,7 @@ const TokenDashboard: React.FC = () => {
               <span className="text-sm font-medium">Bar Tokens</span>
               <span className="text-sm font-medium">{barTokens.toLocaleString()} ({barPercent}%)</span>
             </div>
-            <Progress 
-              value={parseFloat(barPercent)} 
-              className="h-2 bg-gray-200" 
-              indicatorClassName="bg-blue-500" 
-            />
+            <BarProgress />
           </div>
           
           <div>
@@ -96,11 +117,7 @@ const TokenDashboard: React.FC = () => {
               <span className="text-sm font-medium">Cloakroom Tokens</span>
               <span className="text-sm font-medium">{cloakroomTokens.toLocaleString()} ({cloakroomPercent}%)</span>
             </div>
-            <Progress 
-              value={parseFloat(cloakroomPercent)} 
-              className="h-2 bg-gray-200" 
-              indicatorClassName="bg-purple-500" 
-            />
+            <CloakroomProgress />
           </div>
         </div>
       </Card>
