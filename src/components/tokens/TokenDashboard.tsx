@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { useTokens } from "@/contexts/TokenContext";
 import { ArrowUpRight, ArrowDownRight, Coins, CreditCard, Users, Clock } from "lucide-react";
 import ExportDropdown from "@/components/common/ExportDropdown";
+import { cn } from "@/lib/utils";
 
 const TokenDashboard: React.FC = () => {
   const { tokenSales } = useTokens();
@@ -118,9 +119,13 @@ const TokenDashboard: React.FC = () => {
                 </div>
                 <Progress 
                   value={(tokenSales.barTokens / tokenSales.totalCollected) * 100} 
-                  className="h-2"
-                  indicatorColor="bg-primary-purple"
+                  className={cn("h-2", "bg-muted/50")}
                 />
+                <style jsx>{`
+                  :global(.bg-muted\\/50 > div) {
+                    background-color: rgb(147, 51, 234); /* primary-purple equivalent */
+                  }
+                `}</style>
               </div>
               
               <div className="space-y-2">
@@ -133,9 +138,13 @@ const TokenDashboard: React.FC = () => {
                 </div>
                 <Progress 
                   value={(tokenSales.foodTokens / tokenSales.totalCollected) * 100} 
-                  className="h-2"
-                  indicatorColor="bg-secondary-blue"
+                  className={cn("h-2", "secondary-blue-indicator")}
                 />
+                <style jsx>{`
+                  :global(.secondary-blue-indicator > div) {
+                    background-color: rgb(59, 130, 246); /* secondary-blue equivalent */
+                  }
+                `}</style>
               </div>
               
               {tokenSales.cloakroomTokens && (
@@ -149,9 +158,13 @@ const TokenDashboard: React.FC = () => {
                   </div>
                   <Progress 
                     value={(tokenSales.cloakroomTokens / tokenSales.totalCollected) * 100} 
-                    className="h-2"
-                    indicatorColor="bg-accent-teal"
+                    className={cn("h-2", "accent-teal-indicator")}
                   />
+                  <style jsx>{`
+                    :global(.accent-teal-indicator > div) {
+                      background-color: rgb(20, 184, 166); /* accent-teal equivalent */
+                    }
+                  `}</style>
                 </div>
               )}
             </div>
