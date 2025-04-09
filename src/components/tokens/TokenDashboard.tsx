@@ -4,9 +4,11 @@ import { useTokens } from "@/contexts/TokenContext";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useSelectedEventName } from "@/contexts/EventContext";
 
 const TokenDashboard: React.FC = () => {
   const { tokenStats, isLoading } = useTokens();
+  const selectedEventName = useSelectedEventName();
   
   if (isLoading) {
     return <div className="flex justify-center p-8">Loading token stats...</div>;
@@ -23,10 +25,21 @@ const TokenDashboard: React.FC = () => {
   } = tokenStats;
 
   // Calculate percentages for visualization
-  const collectionRatePercent = ((totalTokensCollected / totalTokensSold) * 100).toFixed(1);
-  const foodTruckPercent = ((foodTruckTokens / totalTokensCollected) * 100).toFixed(1);
-  const barPercent = ((barTokens / totalTokensCollected) * 100).toFixed(1);
-  const cloakroomPercent = ((cloakroomTokens / totalTokensCollected) * 100).toFixed(1);
+  const collectionRatePercent = totalTokensSold > 0 
+    ? ((totalTokensCollected / totalTokensSold) * 100).toFixed(1) 
+    : "0.0";
+  
+  const foodTruckPercent = totalTokensCollected > 0 
+    ? ((foodTruckTokens / totalTokensCollected) * 100).toFixed(1)
+    : "0.0";
+  
+  const barPercent = totalTokensCollected > 0 
+    ? ((barTokens / totalTokensCollected) * 100).toFixed(1)
+    : "0.0";
+  
+  const cloakroomPercent = totalTokensCollected > 0 
+    ? ((cloakroomTokens / totalTokensCollected) * 100).toFixed(1)
+    : "0.0";
 
   // Define custom Progress components with different colors
   const FoodTruckProgress = () => (
@@ -59,7 +72,8 @@ const TokenDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <Card className="p-6">
-        <h2 className="text-2xl font-bold mb-4">Token Collection Overview</h2>
+        <h2 className="text-2xl font-bold mb-2">Token Collection Overview</h2>
+        <h3 className="text-lg mb-4 text-muted-foreground">{selectedEventName}</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-muted/50 p-4 rounded-lg">

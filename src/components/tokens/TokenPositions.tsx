@@ -10,9 +10,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
+import { useSelectedEventName } from "@/contexts/EventContext";
 
 const TokenPositions: React.FC = () => {
   const { positions, isLoading } = useTokens();
+  const selectedEventName = useSelectedEventName();
 
   if (isLoading) {
     return <div className="flex justify-center p-8">Loading position data...</div>;
@@ -33,7 +35,8 @@ const TokenPositions: React.FC = () => {
 
   return (
     <Card className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Token Positions Analysis</h2>
+      <h2 className="text-2xl font-bold mb-2">Token Positions Analysis</h2>
+      <h3 className="text-lg mb-4 text-muted-foreground">{selectedEventName}</h3>
       
       <div className="overflow-x-auto">
         <Table>
@@ -49,7 +52,7 @@ const TokenPositions: React.FC = () => {
           </TableHeader>
           <TableBody>
             {positions.map((position) => (
-              <TableRow key={position.position}>
+              <TableRow key={position.position + '-' + position.eventId}>
                 <TableCell className="font-medium">{position.position}</TableCell>
                 <TableCell>{position.transactions}</TableCell>
                 <TableCell>{position.tokensSold}</TableCell>

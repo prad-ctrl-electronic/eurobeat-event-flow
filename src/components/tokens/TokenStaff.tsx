@@ -10,9 +10,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
+import { useSelectedEventName } from "@/contexts/EventContext";
 
 const TokenStaff: React.FC = () => {
   const { staffTokens, isLoading } = useTokens();
+  const selectedEventName = useSelectedEventName();
 
   if (isLoading) {
     return <div className="flex justify-center p-8">Loading staff token data...</div>;
@@ -29,7 +31,8 @@ const TokenStaff: React.FC = () => {
 
   return (
     <Card className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Staff Tokens</h2>
+      <h2 className="text-2xl font-bold mb-2">Staff Tokens</h2>
+      <h3 className="text-lg mb-4 text-muted-foreground">{selectedEventName}</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-muted/50 p-4 rounded-lg">
