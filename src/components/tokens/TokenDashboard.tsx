@@ -17,6 +17,11 @@ const TokenDashboard: React.FC = () => {
 
   const tokenRedemptionRate = ((tokenSales.totalCollected / tokenSales.totalSold) * 100).toFixed(1);
 
+  // Create custom CSS classes for the progress bars
+  const purpleProgressClass = "token-purple-progress";
+  const blueProgressClass = "token-blue-progress";
+  const tealProgressClass = "token-teal-progress";
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -119,13 +124,8 @@ const TokenDashboard: React.FC = () => {
                 </div>
                 <Progress 
                   value={(tokenSales.barTokens / tokenSales.totalCollected) * 100} 
-                  className={cn("h-2", "bg-muted/50")}
+                  className={cn("h-2", purpleProgressClass)}
                 />
-                <style jsx>{`
-                  :global(.bg-muted\\/50 > div) {
-                    background-color: rgb(147, 51, 234); /* primary-purple equivalent */
-                  }
-                `}</style>
               </div>
               
               <div className="space-y-2">
@@ -138,13 +138,8 @@ const TokenDashboard: React.FC = () => {
                 </div>
                 <Progress 
                   value={(tokenSales.foodTokens / tokenSales.totalCollected) * 100} 
-                  className={cn("h-2", "secondary-blue-indicator")}
+                  className={cn("h-2", blueProgressClass)}
                 />
-                <style jsx>{`
-                  :global(.secondary-blue-indicator > div) {
-                    background-color: rgb(59, 130, 246); /* secondary-blue equivalent */
-                  }
-                `}</style>
               </div>
               
               {tokenSales.cloakroomTokens && (
@@ -158,16 +153,26 @@ const TokenDashboard: React.FC = () => {
                   </div>
                   <Progress 
                     value={(tokenSales.cloakroomTokens / tokenSales.totalCollected) * 100} 
-                    className={cn("h-2", "accent-teal-indicator")}
+                    className={cn("h-2", tealProgressClass)}
                   />
-                  <style jsx>{`
-                    :global(.accent-teal-indicator > div) {
-                      background-color: rgb(20, 184, 166); /* accent-teal equivalent */
-                    }
-                  `}</style>
                 </div>
               )}
             </div>
+
+            {/* Custom CSS for progress colors */}
+            <style dangerouslySetInnerHTML={{
+              __html: `
+                .${purpleProgressClass} > div {
+                  background-color: rgb(147, 51, 234); /* primary-purple equivalent */
+                }
+                .${blueProgressClass} > div {
+                  background-color: rgb(59, 130, 246); /* secondary-blue equivalent */
+                }
+                .${tealProgressClass} > div {
+                  background-color: rgb(20, 184, 166); /* accent-teal equivalent */
+                }
+              `
+            }} />
           </CardContent>
         </Card>
 
