@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   Music,
   Building,
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             icon={<Users className="h-5 w-5" />} 
             label="Staffing" 
             to="/staffing" 
+          />
+          <NavItem 
+            icon={<Wallet className="h-5 w-5" />} 
+            label="Tokens" 
+            to="/tokens" 
           />
           <NavItem 
             icon={<Building className="h-5 w-5" />} 
