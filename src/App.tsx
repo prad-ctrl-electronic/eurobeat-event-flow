@@ -17,7 +17,6 @@ import { StaffMembersProvider } from "./contexts/StaffMembersContext";
 import Reports from "./pages/Reports";
 import Tasks from "./pages/Tasks";
 import VendorManagement from "./pages/VendorManagement";
-import TokenManagement from "./pages/TokenManagement";
 
 const App: React.FC = () => {
   return (
@@ -37,7 +36,6 @@ const App: React.FC = () => {
                     <Route path="/reports" element={<Reports />} />
                     <Route path="/tasks" element={<Tasks />} />
                     <Route path="/vendors" element={<VendorManagement />} />
-                    <Route path="/tokens" element={<TokenManagement />} />
                     <Route path="*" element={<DashboardPage />} />
                   </Routes>
                 </BrowserRouter>
